@@ -1,11 +1,4 @@
-const GlobalVariables = {
-    currentTile: null,
-    tiles: [],
-    compareTiles: [],
-    availableTiles: [],
-    moves: -1,
-    _tileComponents: [],
-    gameResult: null,
+const GlobalVariables = {    
 };
 
 export default GlobalVariables;

@@ -1,12 +1,18 @@
-export const TOTAL_TILES = 144;
+export const TOTAL_TILES = 136;
 export const TOTAL_TIME = 15 * 60;
-export const TOTAL_MOVEMENT = 77;
-export const TILE_SIZE = [59 * 0.95, 79 * 0.95];
-export const TILES_PER_ROW = 39;
-export const TILES_PER_COLUMN = 19;
+export const TIME_LIMIT = 1;
+export const ALARM_LIMIT = 1;
 export const WIN = "WIN";
 export const LOSE = "LOSE";
 export const NOT_END = "NOT_END";
+export const PLAYERS = 4;
+export const HAND_CARDS = 13;
+export const WIND_TYPE = {
+    EAST: 0,
+    SOUTH: 1,
+    WEST: 2,
+    NORTH: 3,
+}
 
 export const INST_URL = "http://www.ludoteka.com/international_draughts.html";
 export const YOUTUBE_URL =
@@ -18,4 +24,4 @@ export const PINTEREST_URL = "https://www.pinterest.es/ToroFun/";
 export const TF_URL = "https://www.torofun.com";
 export const TF_SHOP_URL = "https://www.torofun.com/coins";
 
-export const colors = ['blue']
+export const colors = ['blue'];
