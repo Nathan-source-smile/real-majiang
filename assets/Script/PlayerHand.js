@@ -7,6 +7,9 @@ export default cc.Class({
     properties: {
         hand: cc.Node,
         current: cc.Node,
+        player: -1,
+
+        _click: false,
     },
 
 
@@ -36,7 +39,7 @@ export default cc.Class({
         this.current.addChild(tileNode);
     },
 
-    clearDrawCard(){
+    clearDrawCard() {
         this.current.removeAllChildren();
     },
 

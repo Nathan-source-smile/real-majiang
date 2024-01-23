@@ -14,27 +14,52 @@ export default cc.Class({
     },
 
 
-    onLoad () {},
+    onLoad() { },
 
-    start () {
+    start() {
 
     },
 
-    setWind(wind){
+    setWind(wind) {
         this.avatar.setWind(wind);
     },
 
-    initHand(tiles){
+    initHand(tiles) {
         this.hand.initHand(tiles);
     },
 
-    setDrawCard(drawCard){
+    setDrawCard(drawCard) {
         this.hand.setDrawCard(drawCard);
+        this.hand._click = false;
     },
 
-    clearDrawCard(){
+    clearDrawCard() {
         this.hand.clearDrawCard();
     },
-    
-    update (dt) {},
+
+    addDiscardCard(discardCard) {
+        this.discards.add(discardCard);
+    },
+
+    showButtons(str, result, discardCard) {
+        this.avatar.showButtons(str, result, discardCard);
+    },
+
+    confirmPong(result) {
+        this.triples.add(result);
+    },
+
+    confirmPrivateKong(result) {
+        this.triples.add(result);
+    },
+
+    confirmKong(result) {
+        this.triples.add(result);
+    },
+
+    confirmChow(result) {
+        this.triples.add(result);
+    },
+
+    update(dt) { },
 });

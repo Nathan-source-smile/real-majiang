@@ -1,4 +1,7 @@
+import { ClientCommService } from "./ClientCommService";
 import GlobalData from "./Common/GlobalData";
+import { GameScene } from "./GameScene";
+import PlayerHand from "./PlayerHand";
 
 export default cc.Class({
     extends: cc.Component,
@@ -9,6 +12,7 @@ export default cc.Class({
         _id: -1,
         _type: -1,
         _semiType: -1,
+        _tile: null,
     },
 
     onLoad() {
@@ -18,6 +22,7 @@ export default cc.Class({
         this._id = tile.id;
         this._type = tile.type;
         this._semiType = tile.semiType;
+        this._tile = tile;
 
         var spriteName = "";
         if (tile.type >= 0 && tile.type <= 8) {
@@ -55,6 +60,17 @@ export default cc.Class({
         }
         // console.log("sprite name", spriteName);
         this.background.spriteFrame = GlobalData.imgAtlas.getSpriteFrame("tiles-" + spriteName);
+    },
+
+    onClickTile() {
+        let playerHand = this.node.getParent()?.getParent()?.getComponent(PlayerHand);
+        if (playerHand) {
+            if (playerHand.player === GameScene._currentPlayer && !playerHand._click) {
+                console.log(this._id);
+                playerHand._click = true;
+                ClientCommService.sendClaimDiscard(this._tile, GameScene._currentPlayer);
+            }
+        }
     },
 
     update(dt) { },

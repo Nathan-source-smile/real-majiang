@@ -1,3 +1,5 @@
+import { GameScene } from "./GameScene";
+import Tile from "./Tile";
 
 export default cc.Class({
     extends: cc.Component,
@@ -6,11 +8,18 @@ export default cc.Class({
     },
 
 
-    onLoad () {},
+    onLoad() { },
 
-    start () {
+    start() {
 
     },
 
-    update (dt) {},
+    add(discardCard) {
+        let tileNode = cc.instantiate(GameScene.tilePrefab);
+        const tileComponent = tileNode.getComponent(Tile);
+        tileComponent.setTile(discardCard);
+        this.node.addChild(tileNode);
+    },
+
+    update(dt) { },
 });

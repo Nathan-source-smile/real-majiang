@@ -1,6 +1,6 @@
 export const TOTAL_TILES = 136;
 export const TOTAL_TIME = 15 * 60;
-export const TIME_LIMIT = 1;
+export const TIME_LIMIT = 20;
 export const ALARM_LIMIT = 1;
 export const WIN = "WIN";
 export const LOSE = "LOSE";
@@ -12,6 +12,12 @@ export const WIND_TYPE = {
     SOUTH: 1,
     WEST: 2,
     NORTH: 3,
+}
+export const TRIPLE_TYPE = {
+    WIN: 0,
+    KONG: 1,
+    PONG: 2,
+    CHOW: 3,
 }
 
 export const INST_URL = "http://www.ludoteka.com/international_draughts.html";

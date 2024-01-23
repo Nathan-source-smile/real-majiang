@@ -81,6 +81,10 @@
       "__id__": 1
     },
     "_enabled": true,
+    "hand": null,
+    "discards": null,
+    "triples": null,
+    "avatar": null,
     "_id": ""
   },
   {

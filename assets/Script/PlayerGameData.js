@@ -1,4 +1,6 @@
+import Accept from "./Accept";
 import GlobalData from "./Common/GlobalData";
+import { GameScene } from "./GameScene";
 
 var global = require("global");
 
@@ -49,11 +51,13 @@ export default cc.Class({
             default: null,
             type: cc.Node,
         },
+        player: -1,
         // botIconNode: {
         //     default: null,
         //     type: cc.Node
         // },
         _seatWind: null,
+        _discardCard: null,
     },
 
     onLoad() {
@@ -98,6 +102,52 @@ export default cc.Class({
 
     setButtons(active) {
         this.buttons.active = active;
+    },
+
+    showButtons(str, result, discardCard) {
+        this.setButtons(true);
+        if (this._discardCard !== discardCard) {
+            this._discardCard = discardCard;
+            this.buttons.removeAllChildren();
+            let passNode = cc.instantiate(GameScene.acceptPrefab);
+            const passComponent = passNode.getComponent(Accept);
+            passComponent.set("PASS", result, this.player);
+            this.buttons.addChild(passNode);
+        }
+        let acceptNode;
+        let acceptComponent;
+        switch (str) {
+            case "PONG":
+                acceptNode = cc.instantiate(GameScene.acceptPrefab);
+                acceptComponent = acceptNode.getComponent(Accept);
+                acceptComponent.set(str, result, this.player);
+                this.buttons.addChild(acceptNode);
+                break;
+            case "KONG":
+                acceptNode = cc.instantiate(GameScene.acceptPrefab);
+                acceptComponent = acceptNode.getComponent(Accept);
+                acceptComponent.set(str, result, this.player);
+                this.buttons.addChild(acceptNode);
+                break;
+            case "P KONG":
+                acceptNode = cc.instantiate(GameScene.acceptPrefab);
+                acceptComponent = acceptNode.getComponent(Accept);
+                acceptComponent.set(str, result, this.player);
+                this.buttons.addChild(acceptNode);
+                break;
+            case "CHOW":
+                acceptNode = cc.instantiate(GameScene.acceptPrefab);
+                acceptComponent = acceptNode.getComponent(Accept);
+                acceptComponent.set(str, result, this.player);
+                // if (result.length > 1) {
+                //     acceptComponent.button.interactable = false;
+                // }
+                this.buttons.addChild(acceptNode);
+                break;
+            default:
+                return 0;
+        }
+        console.log(this.buttons);
     },
 
     // setBotIcon (isBot){
@@ -157,6 +207,7 @@ export default cc.Class({
             }
         });
         this.loadBackgrounds(false);
+        this.setButtons(false);
     },
 
     hideCountDown() {

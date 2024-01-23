@@ -22,7 +22,9 @@ cc.Class({
         player4: Player,
         board: Board,
         tilePrefab: cc.Prefab,
-        
+        triplePrefab: cc.Prefab,
+        acceptPrefab: cc.Prefab,
+
         _currentPlayer: -1,
         _discardPlayer: -1,
         _players: [],
@@ -67,6 +69,7 @@ cc.Class({
         this._players.forEach((player) => { player.avatar.stopCountDown(); player.avatar.deactivate(); });
         this._players[gameBoardOrder].avatar.activate();
         this._players[gameBoardOrder].avatar.startCountDown(timeout);
+        this._players[gameBoardOrder].hand._click = false;
     },
 
     stopPlayer(gameBoardOrder) {
@@ -74,17 +77,75 @@ cc.Class({
         this._players[gameBoardOrder].avatar.deactivate();
     },
 
-    askPlayer(currentPlayer, drawCard, deckCardsNum) {
+    askPlayer(currentPlayer, drawCard, deckCardsNum, discardCard, discardPlayer) {
         this._currentPlayer = currentPlayer;
         this.setActivePlayer(currentPlayer, TIME_LIMIT);
         this._players[currentPlayer].setDrawCard(drawCard);
         this.board.clearBoard(deckCardsNum);
+        if (discardCard) {
+            this._players[discardPlayer].addDiscardCard(discardCard);
+        }
     },
 
-    showDiscard(discardCard, discardPlayer) {
+    showDiscard(discardCard, discardPlayer, playerHand) {
+        this.stopPlayer(discardPlayer);
         this._discardPlayer = discardPlayer;
         this._players[discardPlayer].clearDrawCard();
         this.board.showDiscard(discardCard);
+
+        this._players[discardPlayer].initHand(playerHand);
+    },
+
+    askPong(player, result, discardCard) {
+        this._players[player].avatar.activate();
+        this._players[player].avatar.startCountDown(TIME_LIMIT);
+        this._players[player].showButtons("PONG", result, discardCard);
+    },
+
+    confirmPong(player, result, playerHand) {
+        this._currentPlayer = player;
+        this.setActivePlayer(player, TIME_LIMIT);
+        this._players[player].initHand(playerHand);
+        this._players[player].confirmPong(result);
+    },
+
+    askKong(player, result, discardCard) {
+        this._players[player].avatar.activate();
+        this._players[player].avatar.startCountDown(TIME_LIMIT);
+        this._players[player].showButtons("KONG", result, discardCard);
+    },
+
+    confirmKong(player, result, playerHand) {
+        this._currentPlayer = player;
+        this.setActivePlayer(player, TIME_LIMIT);
+        this._players[player].initHand(playerHand);
+        this._players[player].confirmKong(result);
+    },
+
+    askPrivateKong(player, result) {
+        this._players[player].avatar.activate();
+        this._players[player].avatar.startCountDown(TIME_LIMIT);
+        this._players[player].showButtons("P KONG", result, null);
+    },
+
+    confirmPrivateKong(player, result, playerHand) {
+        this._currentPlayer = player;
+        this.setActivePlayer(player, TIME_LIMIT);
+        this._players[player].initHand(playerHand);
+        this._players[player].confirmPrivateKong(result);
+    },
+
+    askChow(player, result, discardCard) {
+        this._players[player].avatar.activate();
+        this._players[player].avatar.startCountDown(TIME_LIMIT);
+        this._players[player].showButtons("CHOW", result, discardCard);
+    },
+
+    confirmChow(player, result, playerHand) {
+        this._currentPlayer = player;
+        this.setActivePlayer(player, TIME_LIMIT);
+        this._players[player].initHand(playerHand);
+        this._players[player].confirmChow(result);
     },
 
     // called every frame
