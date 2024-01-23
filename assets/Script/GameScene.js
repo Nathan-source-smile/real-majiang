@@ -8,6 +8,10 @@ import { LOSE, TILE_SIZE, TIME_LIMIT, TOTAL_TILES, TOTAL_TIME, WIN } from "./Com
 import GlobalData from "./Common/GlobalData";
 import Player from "./Player";
 import Board from "./Board";
+import EndRound from "./EndRound";
+import EndGame from "./EndGame";
+import WinNotification from "./WinNotification";
+import LoseNotification from "./LoseNotification";
 
 export let GameScene;
 cc.Class({
@@ -24,6 +28,12 @@ cc.Class({
         tilePrefab: cc.Prefab,
         triplePrefab: cc.Prefab,
         acceptPrefab: cc.Prefab,
+
+        notification: cc.Node,
+        endRound: EndRound,
+        endGame: EndGame,
+        winNotification: WinNotification,
+        loseNotification: LoseNotification,
 
         _currentPlayer: -1,
         _discardPlayer: -1,
@@ -52,8 +62,15 @@ cc.Class({
     },
 
     initPlayersWinds(winds) {
+        this.notification.active = false;
+        this.endRound.node.active = false;
+        this.endGame.node.active = false;
+        this.winNotification.node.active = false;
+        this.loseNotification.node.active = false;
+
         this._players.forEach((player, index) => {
             player.setWind(winds[index]);
+            player.clear();
         });
     },
 
@@ -146,6 +163,32 @@ cc.Class({
         this.setActivePlayer(player, TIME_LIMIT);
         this._players[player].initHand(playerHand);
         this._players[player].confirmChow(result);
+    },
+
+    endSmallGame(roundNum, winners) {
+        this.notification.active = true;
+        this.endRound.node.active = true;
+        this.endGame.node.active = false;
+        this.winNotification.node.active = false;
+        this.loseNotification.node.active = false;
+        this.endRound.setWinners(roundNum, winners);
+    },
+
+    endGameF(windsList, winners, winner) {
+        this.notification.active = true;
+        this.endRound.node.active = false;
+        this.endGame.node.active = true;
+        this.winNotification.node.active = false;
+        this.loseNotification.node.active = false;
+        this.endGame.setWinners(windsList, winners);
+
+        this.scheduleOnce(() => {
+            if (winner.indexOf(0) !== -1) {
+                this.winNotification.node.active = true;
+            } else {
+                this.loseNotification.node.active = true;
+            }
+        }, 3);
     },
 
     // called every frame

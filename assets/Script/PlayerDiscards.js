@@ -14,6 +14,10 @@ export default cc.Class({
 
     },
 
+    clear() {
+        this.node.removeAllChildren();
+    },
+
     add(discardCard) {
         let tileNode = cc.instantiate(GameScene.tilePrefab);
         const tileComponent = tileNode.getComponent(Tile);

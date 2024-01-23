@@ -18,6 +18,7 @@ export const MESSAGE_TYPE = {
 
   SC_DRAW_BOARD: "SC_DRAW_BOARD",
   SC_END_GAME: "SC_END_GAME",
+  SC_END_SMALL_GAME: "SC_END_SMALL_GAME",
   SC_NO_MORE: "SC_NO_MORE",
 
   // Messsages from Client to Server

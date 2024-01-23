@@ -14,6 +14,10 @@ export default cc.Class({
 
     },
 
+    clear() {
+        this.node.removeAllChildren();
+    },
+
     add(tiles) {
         let tripleNode = cc.instantiate(GameScene.triplePrefab);
         const tripleComponent = tripleNode.getComponent(Triple);

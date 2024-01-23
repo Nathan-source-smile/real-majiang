@@ -20,6 +20,12 @@ export default cc.Class({
 
     },
 
+    clear(){
+        this.hand.clear();
+        this.discards.clear();
+        this.triples.clear();
+    },
+
     setWind(wind) {
         this.avatar.setWind(wind);
     },

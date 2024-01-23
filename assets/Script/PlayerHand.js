@@ -19,6 +19,12 @@ export default cc.Class({
 
     },
 
+    clear() {
+        this._click = false;
+        this.hand.removeAllChildren();
+        this.current.removeAllChildren();
+    },
+
     initHand(tiles) {
         this.hand.removeAllChildren();
 

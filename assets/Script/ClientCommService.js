@@ -49,15 +49,11 @@ export const ClientCommService = {
             case MESSAGE_TYPE.SC_CONFIRM_CHOW:
                 GameScene.confirmChow(params.player, params.result, params.playerHand);
                 break;
-
-            case MESSAGE_TYPE.SC_DRAW_BOARD:
-                // GameScene.drawBoard(params.tiles, params.availableTiles, params.moves, params.succeed);
+            case MESSAGE_TYPE.SC_END_SMALL_GAME:
+                GameScene.endSmallGame(params.roundNum, params.winners);
                 break;
             case MESSAGE_TYPE.SC_END_GAME:
-                // GameScene.showEndModal(params.gameResult, params.reason);
-                break;
-            case MESSAGE_TYPE.SC_NO_MORE:
-                // GameScene.showNoMore();
+                GameScene.endGameF(params.windsList, params.winners, params.winner);
                 break;
         }
     },
