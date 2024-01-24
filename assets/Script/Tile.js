@@ -1,6 +1,6 @@
 import { ClientCommService } from "./ClientCommService";
 import GlobalData from "./Common/GlobalData";
-import { GameScene } from "./GameScene";
+var global = require("./global");
 import PlayerHand from "./PlayerHand";
 
 export default cc.Class({
@@ -65,10 +65,10 @@ export default cc.Class({
     onClickTile() {
         let playerHand = this.node.getParent()?.getParent()?.getComponent(PlayerHand);
         if (playerHand) {
-            if (playerHand.player === GameScene._currentPlayer && !playerHand._click) {
+            if (playerHand.player === global.scenes['gameScene']._currentPlayer && !playerHand._click) {
                 console.log(this._id);
                 playerHand._click = true;
-                ClientCommService.sendClaimDiscard(this._tile, GameScene._currentPlayer);
+                ClientCommService.sendClaimDiscard(this._tile, global.scenes['gameScene']._currentPlayer);
             }
         }
     },

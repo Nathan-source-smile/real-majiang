@@ -1,4 +1,4 @@
-import { GameScene } from "./GameScene";
+var global = require("./global");
 import Tile from "./Tile";
 
 export default cc.Class({
@@ -25,7 +25,7 @@ export default cc.Class({
         this.LastDiscardLabel.node.active = true;
         this.discardTile.removeAllChildren();
 
-        let tileNode = cc.instantiate(GameScene.tilePrefab);
+        let tileNode = cc.instantiate(global.scenes['gameScene'].tilePrefab);
         const tileComponent = tileNode.getComponent(Tile);
         tileComponent.setTile(discardCard);
         this.discardTile.addChild(tileNode);

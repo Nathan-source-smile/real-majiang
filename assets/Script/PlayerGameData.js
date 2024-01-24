@@ -1,7 +1,5 @@
 import Accept from "./Accept";
 import GlobalData from "./Common/GlobalData";
-import { GameScene } from "./GameScene";
-
 var global = require("global");
 
 export default cc.Class({
@@ -113,7 +111,7 @@ export default cc.Class({
         if (this._discardCard !== discardCard) {
             this._discardCard = discardCard;
             this.buttons.removeAllChildren();
-            let passNode = cc.instantiate(GameScene.acceptPrefab);
+            let passNode = cc.instantiate(global.scenes['gameScene'].acceptPrefab);
             const passComponent = passNode.getComponent(Accept);
             passComponent.set("PASS", result, this.player);
             this.buttons.addChild(passNode);
@@ -122,25 +120,25 @@ export default cc.Class({
         let acceptComponent;
         switch (str) {
             case "PONG":
-                acceptNode = cc.instantiate(GameScene.acceptPrefab);
+                acceptNode = cc.instantiate(global.scenes['gameScene'].acceptPrefab);
                 acceptComponent = acceptNode.getComponent(Accept);
                 acceptComponent.set(str, result, this.player);
                 this.buttons.addChild(acceptNode);
                 break;
             case "KONG":
-                acceptNode = cc.instantiate(GameScene.acceptPrefab);
+                acceptNode = cc.instantiate(global.scenes['gameScene'].acceptPrefab);
                 acceptComponent = acceptNode.getComponent(Accept);
                 acceptComponent.set(str, result, this.player);
                 this.buttons.addChild(acceptNode);
                 break;
             case "P KONG":
-                acceptNode = cc.instantiate(GameScene.acceptPrefab);
+                acceptNode = cc.instantiate(global.scenes['gameScene'].acceptPrefab);
                 acceptComponent = acceptNode.getComponent(Accept);
                 acceptComponent.set(str, result, this.player);
                 this.buttons.addChild(acceptNode);
                 break;
             case "CHOW":
-                acceptNode = cc.instantiate(GameScene.acceptPrefab);
+                acceptNode = cc.instantiate(global.scenes['gameScene'].acceptPrefab);
                 acceptComponent = acceptNode.getComponent(Accept);
                 acceptComponent.set(str, result, this.player);
                 // if (result.length > 1) {

@@ -1,4 +1,4 @@
-import { GameScene } from "./GameScene";
+var global = require("./global");
 import Triple from "./Triple";
 
 export default cc.Class({
@@ -19,7 +19,7 @@ export default cc.Class({
     },
 
     add(tiles) {
-        let tripleNode = cc.instantiate(GameScene.triplePrefab);
+        let tripleNode = cc.instantiate(global.scenes['gameScene'].triplePrefab);
         const tripleComponent = tripleNode.getComponent(Triple);
         tripleComponent.setTiles(tiles);
         tripleNode.setScale(0.8, 0.8);

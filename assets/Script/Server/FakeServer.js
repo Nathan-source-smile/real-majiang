@@ -1,6 +1,8 @@
-import { MESSAGE_TYPE, ROUNDS } from "../Common/Messages";
+// import { MESSAGE_TYPE } from "../Common/Messages";
+var MESSAGE_TYPE = require('../Common/Messages');
 import { ClientCommService } from "../ClientCommService";
 import { TIME_LIMIT, ALARM_LIMIT, TOTAL_TILES, PLAYERS, HAND_CARDS, WIND_TYPE } from "../Common/Constants";
+var gameVars = require("GameVars");
 
 //--------Defining global variables----------
 var tile = {
@@ -8,49 +10,6 @@ var tile = {
     type: -1,
     semiType: -1,
 }
-var tiles = [];
-var previousTileIds = [];
-var deckCards = [];
-var drawCard = null;
-var discardCard = null;
-
-var player1 = [];
-var player2 = [];
-var player3 = [];
-var player4 = [];
-var players = [player1, player2, player3, player4];
-var playersDiscards = [[], [], [], []];
-var playersPublics = [[], [], [], []];
-var currentPlayer = 0;
-var discardPlayer = 0;
-var winds = [WIND_TYPE.EAST, WIND_TYPE.SOUTH, WIND_TYPE.WEST, WIND_TYPE.NORTH];
-var windsList = [];
-
-var pongPossiblePlayer = -1;
-var kongPossiblePlayer = -1;
-var chowPossiblePlayer = -1;
-var winPossiblePlayers = [];
-
-var resultPong = [];
-var resultKong = [];
-var resultChow = [];
-var privateKong = [];
-
-var selectedChow = [];
-
-var pongPlayer = -1;
-var kongPlayer = -1;
-var chowPlayer = -1;
-var winPlayers = [];
-
-var konged = false;
-
-var roundScore = [0, 0, 0, 0];
-var gameScore = [0, 0, 0, 0];
-var winCounts = [0, 0, 0, 0];
-var winners = [];
-var roundNum = 0;
-var gameNum = 0;
 //--------Defining global variables----------
 
 function copyObject(object) {
@@ -63,7 +22,7 @@ function copyObject(object) {
 
 if (!trace) {
     var trace = function () {
-        console.log(JSON.stringify(arguments));
+        console.trace(JSON.stringify(arguments));
     };
 }
 
@@ -90,7 +49,7 @@ function getTileById(arr, id) {
             return arr[i];
         }
     }
-    console.log("no tile for id:", id);
+    trace("no tile for id:", id);
     debugger;
 }
 
@@ -350,15 +309,15 @@ function isMadeWin(arr, tile) {
 
 function getAllCombines(arr) {
     if (typeof arr !== 'object') {
-        console.log("input must be array");
+        trace("input must be array");
         return [];
     }
     if (!Array.isArray(arr)) {
-        console.log("input must be array");
+        trace("input must be array");
         return [];
     }
     if (arr.length % 3 !== 0) {
-        console.log("length of input must be module 3");
+        trace("length of input must be module 3");
         return [];
     }
     arr.sort(function (a, b) {
@@ -402,51 +361,85 @@ function getAllCombines(arr) {
 }
 
 function initHandlers() {
-    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_RESTART_GAME, startGame);
-    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_CONFIRM_INIT_HANDS, askPlayer);
-    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_CLAIM_DISCARD, claimDiscard);
-    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_CLAIM_PASS, pass);
-    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_CLAIM_PONG, claimPong);
-    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_CLAIM_KONG, claimKong);
-    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_CLAIM_CHOW, claimChow);
-    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_CLAIM_PRIVATE_KONG, claimPrivateKong);
-    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_RESTART_GAME, init);
+    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_RESTART_GAME, onStartGame);
+    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_CONFIRM_INIT_HANDS, onAskPlayer);
+    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_CLAIM_DISCARD, onClaimDiscard);
+    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_CLAIM_PASS, onPass);
+    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_CLAIM_PONG, onClaimPong);
+    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_CLAIM_KONG, onClaimKong);
+    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_CLAIM_CHOW, onClaimChow);
+    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_CLAIM_PRIVATE_KONG, onClaimPrivateKong);
+    ServerCommService.addRequestHandler(MESSAGE_TYPE.CS_RESTART_GAME, onInit);
+}
+
+function onStartGame() {
+    startGame();
+}
+
+function onAskPlayer(params, room) {
+    askPlayer(params, room);
+}
+
+function onClaimDiscard(params, room) {
+    claimDiscard(params, room);
+}
+
+function onPass(params, room) {
+    pass(params, room);
+}
+
+function onClaimPong(params, room) {
+    claimPong(params, room);
+}
+
+function onClaimKong(params, room) {
+    claimKong(params, room);
+}
+
+function onClaimChow(params, room) {
+    claimChow(params, room);
+}
+
+function onClaimPrivateKong(params, room) {
+    claimPrivateKong(params, room);
+}
+
+function onInit() {
+    init();
 }
 
 function init() {
-    roundScore = [0, 0, 0, 0];
-    gameScore = [0, 0, 0, 0];
-    winCounts = [0, 0, 0, 0];
-    winners = [];
-    roundNum = 0;
-    winds = [WIND_TYPE.EAST, WIND_TYPE.SOUTH, WIND_TYPE.WEST, WIND_TYPE.NORTH];
+    gameVars.winCounts = [0, 0, 0, 0];
+    gameVars.winners = [];
+    gameVars.roundNum = 0;
+    gameVars.winds = [WIND_TYPE.EAST, WIND_TYPE.SOUTH, WIND_TYPE.WEST, WIND_TYPE.NORTH];
     ServerCommService.send(
         MESSAGE_TYPE.SC_START_GAME,
-        { winds: copyObject(winds) },
+        { winds: copyObject(gameVars.winds) },
         [0, 1, 2, 3],
     );
-    winds = cyclicShuffle(winds, 1);
-    windsList = [];
+    gameVars.winds = cyclicShuffle(gameVars.winds, 1);
+    gameVars.windsList = [];
     setTimeout(function () {
-        startRound();
+        newRound();
     }, 2000);
 }
 
 function initPlayersWinds() {
-    winds = cyclicShuffle(winds, -1);
+    gameVars.winds = cyclicShuffle(gameVars.winds, -1);
     ServerCommService.send(
         MESSAGE_TYPE.SC_SET_WIND,
-        { winds: winds },
+        { winds: gameVars.winds },
         [0, 1, 2, 3],
     );
 }
 
-function startRound() {
-    roundNum += 1;
-    gameNum = 0;
+function newRound() {
+    gameVars.roundNum += 1;
+    gameVars.gameNum = 0;
     ServerCommService.send(
         MESSAGE_TYPE.SC_START_ROUND,
-        { roundNum: roundNum },
+        { roundNum: gameVars.roundNum },
         [0, 1, 2, 3]
     );
     setTimeout(function () {
@@ -455,28 +448,28 @@ function startRound() {
 }
 
 function startGame() {
-    gameNum += 1;
+    gameVars.gameNum += 1;
     ServerCommService.send(
         MESSAGE_TYPE.SC_START_SMALL_GAME,
-        { roundNum: roundNum, gameNum: gameNum },
+        { roundNum: gameVars.roundNum, gameNum: gameVars.gameNum },
         [0, 1, 2, 3]
     );
 
     initPlayersWinds();
-    windsList.push(winds);
+    gameVars.windsList.push(gameVars.winds);
 
-    players = [[], [], [], []];
-    playersDiscards = [[], [], [], []];
-    playersPublics = [[], [], [], []];
-    previousTileIds = [];
-    deckCards = [];
+    gameVars.players = [[], [], [], []];
+    gameVars.playersDiscards = [[], [], [], []];
+    gameVars.playersPublics = [[], [], [], []];
+    gameVars.previousTileIds = [];
+    gameVars.deckCards = [];
 
-    drawCard = null;
-    discardCard = null;
+    gameVars.drawCard = null;
+    gameVars.discardCard = null;
 
-    currentPlayer = winds.indexOf(WIND_TYPE.EAST);
-    discardPlayer = -1;
-    tiles = [];
+    gameVars.currentPlayer = gameVars.winds.indexOf(WIND_TYPE.EAST);
+    gameVars.discardPlayer = -1;
+    gameVars.tiles = [];
     for (var i = 0; i < TOTAL_TILES; i++) {
         var temp = copyObject(tile);
         temp.id = i;
@@ -492,26 +485,26 @@ function startGame() {
         } else if (temp.type >= 30 && temp.type <= 33) {
             temp.semiType = 4;
         }
-        tiles.push(temp);
+        gameVars.tiles.push(temp);
     }
-    shuffle(tiles);
-    deckCards = copyObject(tiles);
+    shuffle(gameVars.tiles);
+    gameVars.deckCards = copyObject(gameVars.tiles);
     for (var i = 0; i < PLAYERS; i++) {
         for (var j = 0; j < HAND_CARDS; j++) {
-            var tileId = getRandomUniqueInt(0, TOTAL_TILES - 1, previousTileIds);
-            var temp = copyObject(getTileById(tiles, tileId));
-            popTile(deckCards, temp);
-            players[i].push(temp);
+            var tileId = getRandomUniqueInt(0, TOTAL_TILES - 1, gameVars.previousTileIds);
+            var temp = copyObject(getTileById(gameVars.tiles, tileId));
+            popTile(gameVars.deckCards, temp);
+            gameVars.players[i].push(temp);
         }
     }
     for (var i = 0; i < PLAYERS; i++) {
-        sort(players[i]);
+        sort(gameVars.players[i]);
     }
 
     setTimeout(function () {
         ServerCommService.send(
             MESSAGE_TYPE.SC_INIT_PLAYERS_HANDS,
-            { players: players },
+            { players: gameVars.players },
             [0, 1, 2, 3]
         );
     }, 1000);
@@ -520,36 +513,36 @@ function startGame() {
 
 // finish the game or mission
 function gameOver() {
-    if (winners[winners.length - 1] === -1) {
+    if (gameVars.winners[gameVars.winners.length - 1] === -1) {
     }
     else {
-        winCounts[winners[winners.length - 1]] += 1;
+        gameVars.winCounts[gameVars.winners[gameVars.winners.length - 1]] += 1;
     }
     setTimeout(function () {
         ServerCommService.send(
             MESSAGE_TYPE.SC_END_SMALL_GAME,
-            { roundNum: Math.ceil(winners.length / 4), winners: winners },
+            { roundNum: Math.ceil(gameVars.winners.length / 4), winners: gameVars.winners },
             [0, 1, 2, 3]
         );
     }, 5000);
-    if (winners.length === 16) {
-        var max = Math.max.apply(null, winCounts);
+    if (gameVars.winners.length === 16) {
+        var max = Math.max.apply(null, gameVars.winCounts);
         var winner = [];
-        winCounts.forEach(function (e, i) {
+        gameVars.winCounts.forEach(function (e, i) {
             if (e === max)
                 winner.push(i);
         });
         setTimeout(function () {
             ServerCommService.send(
                 MESSAGE_TYPE.SC_END_GAME,
-                { windsList: windsList, winners: winners, winner: winner },
+                { windsList: gameVars.windsList, winners: gameVars.winners, winner: winner },
                 [0, 1, 2, 3]
             );
         }, 10000);
-    } else if (winners.length < 16) {
-        if (winners.length % 4 === 0) {
+    } else if (gameVars.winners.length < 16) {
+        if (gameVars.winners.length % 4 === 0) {
             setTimeout(function () {
-                startRound();
+                newRound();
             }, 10000);
         } else {
             setTimeout(function () {
@@ -573,118 +566,118 @@ function gameOver() {
 }
 
 function askPlayer() {
-    console.log("askPlayer:", currentPlayer);
+    trace("askPlayer:", gameVars.currentPlayer);
     TimeoutManager.clearNextTimeout();
-    if (deckCards.length === 0) {
-        winners.push(-1);
+    if (gameVars.deckCards.length === 0) {
+        gameVars.winners.push(-1);
         gameOver();
         return;
     }
-    var index = Math.floor(Math.random() * deckCards.length);
-    drawCard = copyObject(deckCards[index]);
-    deckCards.splice(index, 1);
-    players[currentPlayer].push(drawCard);
-    sort(players[currentPlayer]);
+    var index = Math.floor(Math.random() * gameVars.deckCards.length);
+    gameVars.drawCard = copyObject(gameVars.deckCards[index]);
+    gameVars.deckCards.splice(index, 1);
+    gameVars.players[gameVars.currentPlayer].push(gameVars.drawCard);
+    sort(gameVars.players[gameVars.currentPlayer]);
     ServerCommService.send(
         MESSAGE_TYPE.SC_ASK_PLAYER,
-        { currentPlayer: currentPlayer, drawCard: drawCard, deckCardsNum: deckCards.length, discardCard: discardCard, discardPlayer: discardPlayer },
+        { currentPlayer: gameVars.currentPlayer, drawCard: gameVars.drawCard, deckCardsNum: gameVars.deckCards.length, discardCard: gameVars.discardCard, discardPlayer: gameVars.discardPlayer },
         [0, 1, 2, 3]
     );
-    discardCard = null;
-    if (isMadeWin(players[currentPlayer], null)) {
-        winners.push(currentPlayer);
+    gameVars.discardCard = null;
+    if (isMadeWin(gameVars.players[gameVars.currentPlayer], null)) {
+        gameVars.winners.push(gameVars.currentPlayer);
         gameOver();
         return;
     }
-    privateKong = isMadeKong(players[currentPlayer], drawCard);
-    if (privateKong.length > 0) {
+    gameVars.privateKong = isMadeKong(gameVars.players[gameVars.currentPlayer], gameVars.drawCard);
+    if (gameVars.privateKong.length > 0) {
         ServerCommService.send(
             MESSAGE_TYPE.SC_ASK_PRIVATE_KONG,
-            { player: currentPlayer, result: privateKong },
+            { player: gameVars.currentPlayer, result: gameVars.privateKong },
             [0, 1, 2, 3]
         );
     } else {
         TimeoutManager.setNextTimeout(function () {
-            claimDiscard({ discardCard: drawCard, discardPlayer: currentPlayer });
+            claimDiscard({ discardCard: gameVars.drawCard, discardPlayer: gameVars.currentPlayer });
         }, TIME_LIMIT);
     }
 }
 
 function claimDiscard(params, room) {
-    console.log("claim discard:");
+    trace("claim discard:");
     TimeoutManager.clearNextTimeout();
-    discardCard = params.discardCard;
-    discardPlayer = params.discardPlayer;
+    gameVars.discardCard = params.discardCard;
+    gameVars.discardPlayer = params.discardPlayer;
 
     // if (discardCard.id !== drawCard.id) {
-    var temp = copyObject(getTileById(tiles, discardCard.id));
-    popTile(players[discardPlayer], temp);
-    sort(players[discardPlayer]);
+    var temp = copyObject(getTileById(gameVars.tiles, gameVars.discardCard.id));
+    popTile(gameVars.players[gameVars.discardPlayer], temp);
+    sort(gameVars.players[gameVars.discardPlayer]);
     // }
 
-    pongPossiblePlayer = -1;
-    kongPossiblePlayer = -1;
-    chowPossiblePlayer = -1;
-    winPossiblePlayers = [];
+    gameVars.pongPossiblePlayer = -1;
+    gameVars.kongPossiblePlayer = -1;
+    gameVars.chowPossiblePlayer = -1;
+    gameVars.winPossiblePlayers = [];
 
-    var pongPlayer = -1;
-    var kongPlayer = -1;
-    var chowPlayer = -1;
-    var winPlayers = [];
+    gameVars.pongPlayer = -1;
+    gameVars.kongPlayer = -1;
+    gameVars.chowPlayer = -1;
+    gameVars.winPlayers = [];
 
-    players.forEach(function (player, index) {
-        if (index !== discardPlayer) {
-            var tempPong = isMadePong(player, discardCard);
-            var tempKong = isMadeKong(player, discardCard);
-            if (isMadeWin(player, discardCard)) {
-                winPossiblePlayers.push(index);
+    gameVars.players.forEach(function (player, index) {
+        if (index !== gameVars.discardPlayer) {
+            var tempPong = isMadePong(player, gameVars.discardCard);
+            var tempKong = isMadeKong(player, gameVars.discardCard);
+            if (isMadeWin(player, gameVars.discardCard)) {
+                gameVars.winPossiblePlayers.push(index);
             }
             if (tempPong.length > 0) {
-                pongPossiblePlayer = index;
-                resultPong = copyObject(tempPong);
+                gameVars.pongPossiblePlayer = index;
+                gameVars.resultPong = copyObject(tempPong);
             }
             if (tempKong.length > 0) {
-                kongPossiblePlayer = index;
-                resultKong = copyObject(tempKong);
+                gameVars.kongPossiblePlayer = index;
+                gameVars.resultKong = copyObject(tempKong);
             }
         }
-        if (index === (discardPlayer + 1) % PLAYERS) {
-            var tempChow = isMadeChow(player, discardCard);
+        if (index === (gameVars.discardPlayer + 1) % PLAYERS) {
+            var tempChow = isMadeChow(player, gameVars.discardCard);
             if (tempChow.length > 0) {
-                chowPossiblePlayer = index;
-                resultChow = copyObject(tempChow);
+                gameVars.chowPossiblePlayer = index;
+                gameVars.resultChow = copyObject(tempChow);
             }
         }
     });
     ServerCommService.send(
         MESSAGE_TYPE.SC_SHOW_DISCARD,
-        { discardCard: discardCard, discardPlayer: discardPlayer, playerHand: players[discardPlayer] },
+        { discardCard: gameVars.discardCard, discardPlayer: gameVars.discardPlayer, playerHand: gameVars.players[gameVars.discardPlayer] },
         [0, 1, 2, 3]
     );
-    if (winPossiblePlayers.length > 0) {
+    if (gameVars.winPossiblePlayers.length > 0) {
         var diffs = [];
-        winPossiblePlayers.forEach(function (e, index) {
-            diffs.push(e - discardPlayer + PLAYERS) % PLAYERS;
+        gameVars.winPossiblePlayers.forEach(function (e, index) {
+            diffs.push(e - gameVars.discardPlayer + PLAYERS) % PLAYERS;
         });
         var min = Math.min.apply(null, diffs);
-        winners.push(winPossiblePlayers[diffs.indexOf(min)]);
+        gameVars.winners.push(gameVars.winPossiblePlayers[diffs.indexOf(min)]);
         gameOver();
         return;
     } else {
-        if (pongPossiblePlayer !== -1) {
+        if (gameVars.pongPossiblePlayer !== -1) {
             askPong();
         }
-        if (kongPossiblePlayer !== -1) {
+        if (gameVars.kongPossiblePlayer !== -1) {
             askKong();
         }
-        if (chowPossiblePlayer !== -1) {
+        if (gameVars.chowPossiblePlayer !== -1) {
             askChow();
         }
     }
-    if (pongPossiblePlayer === -1 && kongPossiblePlayer === -1 && chowPossiblePlayer === -1 && winPossiblePlayers.length === 0) {
+    if (gameVars.pongPossiblePlayer === -1 && gameVars.kongPossiblePlayer === -1 && gameVars.chowPossiblePlayer === -1 && gameVars.winPossiblePlayers.length === 0) {
         TimeoutManager.setNextTimeout(function () {
             // if (!konged)
-            currentPlayer = (currentPlayer + 1) % PLAYERS;
+            gameVars.currentPlayer = (gameVars.currentPlayer + 1) % PLAYERS;
             // else
             // konged = false;
             askPlayer();
@@ -693,60 +686,60 @@ function claimDiscard(params, room) {
 }
 
 function askPong() {
-    console.log("askPong: ", pongPossiblePlayer, resultPong);
+    trace("askPong: ", gameVars.pongPossiblePlayer, gameVars.resultPong);
     TimeoutManager.clearNextTimeout();
     ServerCommService.send(
         MESSAGE_TYPE.SC_ASK_PONG,
-        { player: pongPossiblePlayer, result: resultPong, discardCard: discardCard },
+        { player: gameVars.pongPossiblePlayer, result: gameVars.resultPong, discardCard: gameVars.discardCard },
         [0, 1, 2, 3]
     );
     TimeoutManager.setNextTimeout(function () {
-        pass({ player: pongPossiblePlayer });
+        pass({ player: gameVars.pongPossiblePlayer });
     }, TIME_LIMIT);
 }
 
 function askKong() {
-    console.log("askKong: ", kongPossiblePlayer, resultKong);
+    trace("askKong: ", gameVars.kongPossiblePlayer, gameVars.resultKong);
     TimeoutManager.clearNextTimeout();
     ServerCommService.send(
         MESSAGE_TYPE.SC_ASK_KONG,
-        { player: kongPossiblePlayer, result: resultKong, discardCard: discardCard },
+        { player: gameVars.kongPossiblePlayer, result: gameVars.resultKong, discardCard: gameVars.discardCard },
         [0, 1, 2, 3]
     );
     TimeoutManager.setNextTimeout(function () {
-        pass({ player: kongPossiblePlayer });
+        pass({ player: gameVars.kongPossiblePlayer });
     }, TIME_LIMIT);
 }
 
 function askChow() {
-    console.log("askChow: ", chowPossiblePlayer, resultChow);
+    trace("askChow: ", gameVars.chowPossiblePlayer, gameVars.resultChow);
     TimeoutManager.clearNextTimeout();
     ServerCommService.send(
         MESSAGE_TYPE.SC_ASK_CHOW,
-        { player: chowPossiblePlayer, result: resultChow, discardCard: discardCard },
+        { player: gameVars.chowPossiblePlayer, result: gameVars.resultChow, discardCard: gameVars.discardCard },
         [0, 1, 2, 3]
     );
     TimeoutManager.setNextTimeout(function () {
-        pass({ player: chowPossiblePlayer });
+        pass({ player: gameVars.chowPossiblePlayer });
     }, TIME_LIMIT);
 }
 
 function pass(params, room) {
-    console.log("pass");
+    trace("pass");
     TimeoutManager.clearNextTimeout();
     var player = params.player;
-    if (pongPossiblePlayer === player) {
-        pongPossiblePlayer = -1;
+    if (gameVars.pongPossiblePlayer === player) {
+        gameVars.pongPossiblePlayer = -1;
     }
-    if (kongPossiblePlayer === player) {
-        kongPossiblePlayer = -1;
+    if (gameVars.kongPossiblePlayer === player) {
+        gameVars.kongPossiblePlayer = -1;
     }
-    if (chowPossiblePlayer === player) {
-        chowPossiblePlayer = -1;
+    if (gameVars.chowPossiblePlayer === player) {
+        gameVars.chowPossiblePlayer = -1;
     }
-    var index = winPossiblePlayers.indexOf(player);
+    var index = gameVars.winPossiblePlayers.indexOf(player);
     if (index !== -1) {
-        winPossiblePlayers.splice(index, 1);
+        gameVars.winPossiblePlayers.splice(index, 1);
     }
 
     // if (pongPossiblePlayer === -1 && kongPossiblePlayer === -1 && chowPossiblePlayer === -1 && winPossiblePlayers.length === 0) {
@@ -757,14 +750,14 @@ function pass(params, room) {
 }
 
 function claimPong(params, room) {
-    console.log("claim pong");
+    trace("claim pong");
     TimeoutManager.clearNextTimeout();
     var player = params.player;
-    if (pongPossiblePlayer === player) {
-        pongPossiblePlayer = -1;
-        pongPlayer = player;
-        if (player === chowPossiblePlayer)
-            chowPossiblePlayer = -1;
+    if (gameVars.pongPossiblePlayer === player) {
+        gameVars.pongPossiblePlayer = -1;
+        gameVars.pongPlayer = player;
+        if (player === gameVars.chowPossiblePlayer)
+            gameVars.chowPossiblePlayer = -1;
     }
 
     confirmClaimTriples();
@@ -772,14 +765,14 @@ function claimPong(params, room) {
 }
 
 function claimKong(params, room) {
-    console.log("claim kong");
+    trace("claim kong");
     TimeoutManager.clearNextTimeout();
     var player = params.player;
-    if (kongPossiblePlayer === player) {
-        kongPossiblePlayer = -1;
-        kongPlayer = player;
-        if (player === chowPossiblePlayer)
-            chowPossiblePlayer = -1;
+    if (gameVars.kongPossiblePlayer === player) {
+        gameVars.kongPossiblePlayer = -1;
+        gameVars.kongPlayer = player;
+        if (player === gameVars.chowPossiblePlayer)
+            gameVars.chowPossiblePlayer = -1;
     }
 
     confirmClaimTriples();
@@ -787,42 +780,41 @@ function claimKong(params, room) {
 }
 
 function claimPrivateKong(params, room) {
-    console.log("claim private kong");
+    trace("claim private kong");
     TimeoutManager.clearNextTimeout();
     var player = params.player;
 
-    playersPublics[currentPlayer].push(privateKong);
+    gameVars.playersPublics[gameVars.currentPlayer].push(gameVars.privateKong);
     // players[currentPlayer].push(discardCard);
-    privateKong.forEach(function (tile, index) {
-        popTile(players[currentPlayer], tile);
+    gameVars.privateKong.forEach(function (tile, index) {
+        popTile(gameVars.players[gameVars.currentPlayer], tile);
     });
     // var temp = getRandomTile(players[currentPlayer]);
     ServerCommService.send(
         MESSAGE_TYPE.SC_CONFIRM_PRIVATE_KONG,
-        { player: currentPlayer, result: privateKong, playerHand: copyObject(players[currentPlayer]) },
+        { player: gameVars.currentPlayer, result: gameVars.privateKong, playerHand: copyObject(gameVars.players[gameVars.currentPlayer]) },
         [0, 1, 2, 3]
     );
-    konged = true;
     // TimeoutManager.setNextTimeout(function () {
     // claimDiscard({ discardCard: temp, discardPlayer: currentPlayer });
-    discardCard = null;
+    gameVars.discardCard = null;
     askPlayer();
     // }, 0.2);
 
 }
 
 function claimChow(params, room) {
-    console.log("claim chow");
+    trace("claim chow");
     TimeoutManager.clearNextTimeout();
     var player = params.player;
-    selectedChow = params.tiles;
-    if (chowPossiblePlayer === player) {
-        chowPossiblePlayer = -1;
-        chowPlayer = player;
-        if (pongPossiblePlayer === player)
-            pongPossiblePlayer = -1;
-        if (kongPossiblePlayer === player)
-            kongPossiblePlayer = -1;
+    gameVars.selectedChow = params.tiles;
+    if (gameVars.chowPossiblePlayer === player) {
+        gameVars.chowPossiblePlayer = -1;
+        gameVars.chowPlayer = player;
+        if (gameVars.pongPossiblePlayer === player)
+            gameVars.pongPossiblePlayer = -1;
+        if (gameVars.kongPossiblePlayer === player)
+            gameVars.kongPossiblePlayer = -1;
     }
 
     confirmClaimTriples();
@@ -830,72 +822,71 @@ function claimChow(params, room) {
 }
 
 function confirmClaimTriples() {
-    if (pongPossiblePlayer === -1 && kongPossiblePlayer === -1 && chowPossiblePlayer === -1 && winPossiblePlayers.length === 0) {
-        if (winPlayers.length > 0) {
+    if (gameVars.pongPossiblePlayer === -1 && gameVars.kongPossiblePlayer === -1 && gameVars.chowPossiblePlayer === -1 && gameVars.winPossiblePlayers.length === 0) {
+        if (gameVars.winPlayers.length > 0) {
             var diffs = [];
-            winPlayers.forEach(function (winPlayer, index) {
-                diffs.push(winPlayer - currentPlayer + PLAYERS) % PLAYERS;
+            gameVars.winPlayers.forEach(function (winPlayer, index) {
+                diffs.push(winPlayer - gameVars.currentPlayer + PLAYERS) % PLAYERS;
             });
             var min = Math.min.apply(null, diffs);
-            currentPlayer = winPlayers[diffs.indexOf(min)];
-        } else if (kongPlayer !== -1) {
-            playersPublics[kongPlayer].push(resultKong);
-            currentPlayer = kongPlayer;
-            players[currentPlayer].push(discardCard);
-            resultKong.forEach(function (tile, index) {
-                popTile(players[currentPlayer], tile);
+            gameVars.currentPlayer = gameVars.winPlayers[diffs.indexOf(min)];
+        } else if (gameVars.kongPlayer !== -1) {
+            gameVars.playersPublics[gameVars.kongPlayer].push(gameVars.resultKong);
+            gameVars.currentPlayer = gameVars.kongPlayer;
+            gameVars.players[gameVars.currentPlayer].push(gameVars.discardCard);
+            gameVars.resultKong.forEach(function (tile, index) {
+                popTile(gameVars.players[gameVars.currentPlayer], tile);
             });
             // var temp = getRandomTile(players[currentPlayer]);
             ServerCommService.send(
                 MESSAGE_TYPE.SC_CONFIRM_KONG,
-                { player: kongPlayer, result: resultKong, playerHand: copyObject(players[currentPlayer]) },
+                { player: gameVars.kongPlayer, result: gameVars.resultKong, playerHand: copyObject(gameVars.players[gameVars.currentPlayer]) },
                 [0, 1, 2, 3]
             );
-            konged = true;
             // TimeoutManager.setNextTimeout(function () {
             // claimDiscard({ discardCard: temp, discardPlayer: currentPlayer });
-            discardCard = null;
+            gameVars.discardCard = null;
             askPlayer();
             // }, 0.2);
-        } else if (pongPlayer !== -1) {
-            playersPublics[pongPlayer].push(resultPong);
-            currentPlayer = pongPlayer;
-            players[currentPlayer].push(discardCard);
-            resultPong.forEach(function (tile, index) {
-                popTile(players[currentPlayer], tile);
+        } else if (gameVars.pongPlayer !== -1) {
+            gameVars.playersPublics[gameVars.pongPlayer].push(gameVars.resultPong);
+            gameVars.currentPlayer = gameVars.pongPlayer;
+            gameVars.players[gameVars.currentPlayer].push(gameVars.discardCard);
+            gameVars.resultPong.forEach(function (tile, index) {
+                popTile(gameVars.players[gameVars.currentPlayer], tile);
             });
-            var temp = getRandomTile(players[currentPlayer]);
+            var temp = getRandomTile(gameVars.players[gameVars.currentPlayer]);
             ServerCommService.send(
                 MESSAGE_TYPE.SC_CONFIRM_PONG,
-                { player: pongPlayer, result: resultPong, playerHand: players[currentPlayer] },
+                { player: gameVars.pongPlayer, result: gameVars.resultPong, playerHand: gameVars.players[gameVars.currentPlayer] },
                 [0, 1, 2, 3]
             );
             TimeoutManager.setNextTimeout(function () {
-                claimDiscard({ discardCard: temp, discardPlayer: currentPlayer });
+                claimDiscard({ discardCard: temp, discardPlayer: gameVars.currentPlayer });
             }, TIME_LIMIT);
-        } else if (chowPlayer !== -1) {
-            playersPublics[chowPlayer].push(selectedChow);
-            currentPlayer = chowPlayer;
-            players[currentPlayer].push(discardCard);
-            selectedChow.forEach(function (tile, index) {
-                popTile(players[currentPlayer], tile);
+        } else if (gameVars.chowPlayer !== -1) {
+            gameVars.playersPublics[gameVars.chowPlayer].push(gameVars.selectedChow);
+            gameVars.currentPlayer = gameVars.chowPlayer;
+            gameVars.players[gameVars.currentPlayer].push(gameVars.discardCard);
+            gameVars.selectedChow.forEach(function (tile, index) {
+                popTile(gameVars.players[gameVars.currentPlayer], tile);
             });
-            var temp = getRandomTile(players[currentPlayer]);
+            var temp = getRandomTile(gameVars.players[gameVars.currentPlayer]);
             ServerCommService.send(
                 MESSAGE_TYPE.SC_CONFIRM_CHOW,
-                { player: chowPlayer, result: selectedChow, playerHand: players[currentPlayer] },
+                { player: gameVars.chowPlayer, result: gameVars.selectedChow, playerHand: gameVars.players[gameVars.currentPlayer] },
                 [0, 1, 2, 3]
             );
             TimeoutManager.setNextTimeout(function () {
-                claimDiscard({ discardCard: temp, discardPlayer: currentPlayer });
+                claimDiscard({ discardCard: temp, discardPlayer: gameVars.currentPlayer });
             }, TIME_LIMIT);
         } else {
-            currentPlayer = (currentPlayer + 1) % PLAYERS;
+            gameVars.currentPlayer = (gameVars.currentPlayer + 1) % PLAYERS;
             askPlayer();
         }
-        kongPlayer = -1;
-        pongPlayer = -1;
-        chowPlayer = -1;
+        gameVars.kongPlayer = -1;
+        gameVars.pongPlayer = -1;
+        gameVars.chowPlayer = -1;
     }
 }
 

@@ -24,7 +24,7 @@ export default cc.Class({
     },
 
     onClick() {
-        ClientCommService.sendRestartGame();
+        ClientCommService.sendRestartGame(0);
     },
 
     update(dt) { },

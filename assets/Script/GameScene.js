@@ -3,7 +3,7 @@ import { FakeServer } from "./Common/CommServices";
 import { ClientCommService } from "./ClientCommService";
 import TopBar from "./TopBar";
 import GlobalVariables from "./GlobalVariables";
-import { LOSE, TILE_SIZE, TIME_LIMIT, TOTAL_TILES, TOTAL_TIME, WIN } from "./Common/Constants";
+import { TIME_LIMIT, TOTAL_TILES } from "./Common/Constants";
 import GlobalData from "./Common/GlobalData";
 import Player from "./Player";
 import Board from "./Board";
@@ -14,7 +14,10 @@ import LoseNotification from "./LoseNotification";
 import StartRound from "./StartRound";
 import StartSmallGame from "./StartSmallGame";
 
-export let GameScene;
+var Audio = require("./Audio.js");
+var lang = require("./lang.js");
+var global = require("./global.js");
+
 cc.Class({
     extends: cc.Component,
 
@@ -47,13 +50,19 @@ cc.Class({
 
     // use this for initialization
     onLoad: function () {
-        // global.loadingScene = false;
-        // global.scenes['currentScene'] = this;
-        // global.scenes['gameScene'] = global.scenes['currentScene'];
+        global.loadingScene = false;
+        global.scenes['currentScene'] = this;
+        global.scenes['gameScene'] = global.scenes['currentScene'];
+        // console.log(global.scenes['gameScene'], global.scenes['currentScene'], global.loadingScene);
 
-        GameScene = this;
         this._time = cc.director.getTotalTime();
         this._players = [this.player1, this.player2, this.player3, this.player4];
+
+        lang.translateScene(cc.director.getScene(), ["continue", "accept", "pass"]);
+        if (global.soundtrack) {
+            Audio.playMusic(global.soundtrack);
+        }
+
         loadImgAtlas()
             .then(() => {
                 FakeServer.initHandlers();
@@ -88,7 +97,7 @@ cc.Class({
         this.startAnimNode.off('finished', this.onAnimationFinished, this);
     },
 
-    startRound(roundNum) {
+    newRound(roundNum) {
         this._players.forEach((player, index) => {
             player.clear();
         });
@@ -172,56 +181,56 @@ cc.Class({
         this._players[discardPlayer].initHand(playerHand);
     },
 
-    askPong(player, result, discardCard) {
-        this._players[player].avatar.activate();
-        this._players[player].avatar.startCountDown(TIME_LIMIT);
-        this._players[player].showButtons("PONG", result, discardCard);
+    askPong(gameBoardOrder, result, discardCard) {
+        this._players[gameBoardOrder].avatar.activate();
+        this._players[gameBoardOrder].avatar.startCountDown(TIME_LIMIT);
+        this._players[gameBoardOrder].showButtons("PONG", result, discardCard);
     },
 
-    confirmPong(player, result, playerHand) {
-        this._currentPlayer = player;
-        this.setActivePlayer(player, TIME_LIMIT);
-        this._players[player].initHand(playerHand);
-        this._players[player].confirmPong(result);
+    confirmPong(gameBoardOrder, result, playerHand) {
+        this._currentPlayer = gameBoardOrder;
+        this.setActivePlayer(gameBoardOrder, TIME_LIMIT);
+        this._players[gameBoardOrder].initHand(playerHand);
+        this._players[gameBoardOrder].confirmPong(result);
     },
 
-    askKong(player, result, discardCard) {
-        this._players[player].avatar.activate();
-        this._players[player].avatar.startCountDown(TIME_LIMIT);
-        this._players[player].showButtons("KONG", result, discardCard);
+    askKong(gameBoardOrder, result, discardCard) {
+        this._players[gameBoardOrder].avatar.activate();
+        this._players[gameBoardOrder].avatar.startCountDown(TIME_LIMIT);
+        this._players[gameBoardOrder].showButtons("KONG", result, discardCard);
     },
 
-    confirmKong(player, result, playerHand) {
-        this._currentPlayer = player;
-        this.setActivePlayer(player, TIME_LIMIT);
-        this._players[player].initHand(playerHand);
-        this._players[player].confirmKong(result);
+    confirmKong(gameBoardOrder, result, playerHand) {
+        this._currentPlayer = gameBoardOrder;
+        this.setActivePlayer(gameBoardOrder, TIME_LIMIT);
+        this._players[gameBoardOrder].initHand(playerHand);
+        this._players[gameBoardOrder].confirmKong(result);
     },
 
-    askPrivateKong(player, result) {
-        this._players[player].avatar.activate();
-        this._players[player].avatar.startCountDown(TIME_LIMIT);
-        this._players[player].showButtons("P KONG", result, null);
+    askPrivateKong(gameBoardOrder, result) {
+        this._players[gameBoardOrder].avatar.activate();
+        this._players[gameBoardOrder].avatar.startCountDown(TIME_LIMIT);
+        this._players[gameBoardOrder].showButtons("P KONG", result, null);
     },
 
-    confirmPrivateKong(player, result, playerHand) {
-        this._currentPlayer = player;
-        this.setActivePlayer(player, TIME_LIMIT);
-        this._players[player].initHand(playerHand);
-        this._players[player].confirmPrivateKong(result);
+    confirmPrivateKong(gameBoardOrder, result, playerHand) {
+        this._currentPlayer = gameBoardOrder;
+        this.setActivePlayer(gameBoardOrder, TIME_LIMIT);
+        this._players[gameBoardOrder].initHand(playerHand);
+        this._players[gameBoardOrder].confirmPrivateKong(result);
     },
 
-    askChow(player, result, discardCard) {
-        this._players[player].avatar.activate();
-        this._players[player].avatar.startCountDown(TIME_LIMIT);
-        this._players[player].showButtons("CHOW", result, discardCard);
+    askChow(gameBoardOrder, result, discardCard) {
+        this._players[gameBoardOrder].avatar.activate();
+        this._players[gameBoardOrder].avatar.startCountDown(TIME_LIMIT);
+        this._players[gameBoardOrder].showButtons("CHOW", result, discardCard);
     },
 
-    confirmChow(player, result, playerHand) {
-        this._currentPlayer = player;
-        this.setActivePlayer(player, TIME_LIMIT);
-        this._players[player].initHand(playerHand);
-        this._players[player].confirmChow(result);
+    confirmChow(gameBoardOrder, result, playerHand) {
+        this._currentPlayer = gameBoardOrder;
+        this.setActivePlayer(gameBoardOrder, TIME_LIMIT);
+        this._players[gameBoardOrder].initHand(playerHand);
+        this._players[gameBoardOrder].confirmChow(result);
     },
 
     endSmallGame(roundNum, winners) {

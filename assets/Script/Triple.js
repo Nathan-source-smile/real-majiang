@@ -1,6 +1,6 @@
 import Accept from "./Accept";
 import { ClientCommService } from "./ClientCommService";
-import { GameScene } from "./GameScene";
+var global = require("./global");
 import Tile from "./Tile";
 
 export default cc.Class({
@@ -23,7 +23,7 @@ export default cc.Class({
         this._tiles = tiles;
         this.background.removeAllChildren();
         tiles.forEach((tile, index) => {
-            let tileNode = cc.instantiate(GameScene.tilePrefab);
+            let tileNode = cc.instantiate(global.scenes['gameScene'].tilePrefab);
             const tileComponent = tileNode.getComponent(Tile);
             tileComponent.setTile(tile);
             tileNode.getComponent(cc.Button).interactable = false;
@@ -34,7 +34,7 @@ export default cc.Class({
 
     onClick() {
         let player = this.node.getParent().getComponent(Accept)._player;
-        GameScene.stopPlayer(player);
+        global.scenes['gameScene'].stopPlayer(player);
         ClientCommService.sendClaimChow(player, this._tiles);
     },
 

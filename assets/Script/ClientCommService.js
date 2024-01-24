@@ -1,6 +1,7 @@
-import { MESSAGE_TYPE } from "./Common/Messages";
+// import { MESSAGE_TYPE } from "./Common/Messages";
 import { ServerCommService } from "./Common/CommServices";
-import { GameScene } from "./GameScene";
+var global = require("./global");
+var MESSAGE_TYPE = require('../Script/Common/Messages');
 
 export const ClientCommService = {
     onExtensionResponse(event) {
@@ -11,55 +12,55 @@ export const ClientCommService = {
 
         switch (messageType) {
             case MESSAGE_TYPE.SC_START_GAME:
-                GameScene.start1(params.winds);
+                global.scenes['gameScene'].start1(params.winds);
                 break;
             case MESSAGE_TYPE.SC_START_ROUND:
-                GameScene.startRound(params.roundNum);
+                global.scenes['gameScene'].newRound(params.roundNum);
                 break;
             case MESSAGE_TYPE.SC_START_SMALL_GAME:
-                GameScene.startSmallGame(params.roundNum, params.gameNum);
+                global.scenes['gameScene'].startSmallGame(params.roundNum, params.gameNum);
                 break;
             case MESSAGE_TYPE.SC_SET_WIND:
-                GameScene.initPlayersWinds(params.winds);
+                global.scenes['gameScene'].initPlayersWinds(params.winds);
                 break;
             case MESSAGE_TYPE.SC_INIT_PLAYERS_HANDS:
-                GameScene.initPlayersHands(params.players);
+                global.scenes['gameScene'].initPlayersHands(params.players);
                 break;
             case MESSAGE_TYPE.SC_ASK_PLAYER:
-                GameScene.askPlayer(params.currentPlayer, params.drawCard, params.deckCardsNum, params.discardCard, params.discardPlayer);
+                global.scenes['gameScene'].askPlayer(params.currentPlayer, params.drawCard, params.deckCardsNum, params.discardCard, params.discardPlayer);
                 break;
             case MESSAGE_TYPE.SC_SHOW_DISCARD:
-                GameScene.showDiscard(params.discardCard, params.discardPlayer, params.playerHand);
+                global.scenes['gameScene'].showDiscard(params.discardCard, params.discardPlayer, params.playerHand);
                 break;
             case MESSAGE_TYPE.SC_ASK_PONG:
-                GameScene.askPong(params.player, params.result, params.discardCard);
+                global.scenes['gameScene'].askPong(params.player, params.result, params.discardCard);
                 break;
             case MESSAGE_TYPE.SC_CONFIRM_PONG:
-                GameScene.confirmPong(params.player, params.result, params.playerHand);
+                global.scenes['gameScene'].confirmPong(params.player, params.result, params.playerHand);
                 break;
             case MESSAGE_TYPE.SC_ASK_KONG:
-                GameScene.askKong(params.player, params.result, params.discardCard);
+                global.scenes['gameScene'].askKong(params.player, params.result, params.discardCard);
                 break;
             case MESSAGE_TYPE.SC_CONFIRM_KONG:
-                GameScene.confirmKong(params.player, params.result, params.playerHand);
+                global.scenes['gameScene'].confirmKong(params.player, params.result, params.playerHand);
                 break;
             case MESSAGE_TYPE.SC_ASK_PRIVATE_KONG:
-                GameScene.askPrivateKong(params.player, params.result);
+                global.scenes['gameScene'].askPrivateKong(params.player, params.result);
                 break;
             case MESSAGE_TYPE.SC_CONFIRM_PRIVATE_KONG:
-                GameScene.confirmPrivateKong(params.player, params.result, params.playerHand);
+                global.scenes['gameScene'].confirmPrivateKong(params.player, params.result, params.playerHand);
                 break;
             case MESSAGE_TYPE.SC_ASK_CHOW:
-                GameScene.askChow(params.player, params.result, params.discardCard);
+                global.scenes['gameScene'].askChow(params.player, params.result, params.discardCard);
                 break;
             case MESSAGE_TYPE.SC_CONFIRM_CHOW:
-                GameScene.confirmChow(params.player, params.result, params.playerHand);
+                global.scenes['gameScene'].confirmChow(params.player, params.result, params.playerHand);
                 break;
             case MESSAGE_TYPE.SC_END_SMALL_GAME:
-                GameScene.endSmallGame(params.roundNum, params.winners);
+                global.scenes['gameScene'].endSmallGame(params.roundNum, params.winners);
                 break;
             case MESSAGE_TYPE.SC_END_GAME:
-                GameScene.endGameF(params.windsList, params.winners, params.winner);
+                global.scenes['gameScene'].endGameF(params.windsList, params.winners, params.winner);
                 break;
         }
     },
@@ -96,7 +97,11 @@ export const ClientCommService = {
         this.send(MESSAGE_TYPE.CS_CLAIM_CHOW, { player: player, tiles: tiles });
     },
 
-    sendRestartGame() {
-        this.send(MESSAGE_TYPE.CS_RESTART_GAME, {}, 1);
+    sendRestartGame(player) {
+        this.send(MESSAGE_TYPE.CS_RESTART_GAME, { player: player }, 1);
+    },
+
+    sendCommand(type, params) {
+        this.send(type, params, 1);
     }
 };

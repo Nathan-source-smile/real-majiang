@@ -1,4 +1,4 @@
-import { GameScene } from "./GameScene";
+var global = require("./global");
 import Tile from "./Tile";
 
 export default cc.Class({
@@ -29,7 +29,7 @@ export default cc.Class({
         this.hand.removeAllChildren();
 
         tiles.forEach((tile, index) => {
-            let tileNode = cc.instantiate(GameScene.tilePrefab);
+            let tileNode = cc.instantiate(global.scenes['gameScene'].tilePrefab);
             const tileComponent = tileNode.getComponent(Tile);
             tileComponent.setTile(tile);
             this.hand.addChild(tileNode);
@@ -39,7 +39,7 @@ export default cc.Class({
     setDrawCard(drawCard) {
         this.current.removeAllChildren();
 
-        let tileNode = cc.instantiate(GameScene.tilePrefab);
+        let tileNode = cc.instantiate(global.scenes['gameScene'].tilePrefab);
         const tileComponent = tileNode.getComponent(Tile);
         tileComponent.setTile(drawCard);
         this.current.addChild(tileNode);

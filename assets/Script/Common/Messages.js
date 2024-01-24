@@ -1,4 +1,4 @@
-export const MESSAGE_TYPE = {
+var MESSAGE_TYPE = {
   // Messages from Server to Client
   SC_START_GAME: "SC_START_GAME",
   SC_START_ROUND: "SC_START_ROUND",
@@ -17,11 +17,8 @@ export const MESSAGE_TYPE = {
   SC_CONFIRM_CHOW: "SC_CONFIRM_CHOW",
   SC_ASK_WIN: "SC_ASK_WIN",
   SC_CONFIRM_WIN: "SC_CONFIRM_WIN",
-
-  SC_DRAW_BOARD: "SC_DRAW_BOARD",
   SC_END_GAME: "SC_END_GAME",
   SC_END_SMALL_GAME: "SC_END_SMALL_GAME",
-  SC_NO_MORE: "SC_NO_MORE",
 
   // Messsages from Client to Server
   CS_CONFIRM_INIT_HANDS: "CS_CONFIRM_INIT_HANDS",
@@ -35,9 +32,4 @@ export const MESSAGE_TYPE = {
   CS_RESTART_GAME: "CS_RESTART_GAME",
 };
 
-export const ROUNDS = {
-  START_GAME: 0,
-  START_STEP: 1,
-  SELECT_UNIT: 2,
-  MOVE_UNIT: 3,
-};
+module.exports = MESSAGE_TYPE;

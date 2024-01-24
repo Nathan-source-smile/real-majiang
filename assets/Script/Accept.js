@@ -1,6 +1,6 @@
 import { ClientCommService } from "./ClientCommService";
-import { GameScene } from "./GameScene";
 import Triple from "./Triple";
+var global = require("./global");
 
 export default cc.Class({
     extends: cc.Component,
@@ -28,7 +28,7 @@ export default cc.Class({
         let tripleComponent;
         switch (str) {
             case "PONG":
-                tripleNode = cc.instantiate(GameScene.triplePrefab);
+                tripleNode = cc.instantiate(global.scenes['gameScene'].triplePrefab);
                 tripleComponent = tripleNode.getComponent(Triple);
                 tripleComponent.setTiles(result);
                 tripleNode.setScale(0.5, 0.5);
@@ -36,7 +36,7 @@ export default cc.Class({
                 this.node.addChild(tripleNode);
                 break;
             case "KONG":
-                tripleNode = cc.instantiate(GameScene.triplePrefab);
+                tripleNode = cc.instantiate(global.scenes['gameScene'].triplePrefab);
                 tripleComponent = tripleNode.getComponent(Triple);
                 tripleComponent.setTiles(result);
                 tripleNode.setScale(0.5, 0.5);
@@ -44,7 +44,7 @@ export default cc.Class({
                 this.node.addChild(tripleNode);
                 break;
             case "P KONG":
-                tripleNode = cc.instantiate(GameScene.triplePrefab);
+                tripleNode = cc.instantiate(global.scenes['gameScene'].triplePrefab);
                 tripleComponent = tripleNode.getComponent(Triple);
                 tripleComponent.setTiles(result);
                 tripleNode.setScale(0.5, 0.5);
@@ -53,7 +53,7 @@ export default cc.Class({
                 break;
             case "CHOW":
                 result.forEach((item, i) => {
-                    tripleNode = cc.instantiate(GameScene.triplePrefab);
+                    tripleNode = cc.instantiate(global.scenes['gameScene'].triplePrefab);
                     tripleComponent = tripleNode.getComponent(Triple);
                     tripleComponent.setTiles(item);
                     tripleNode.setScale(0.5, 0.5);
@@ -74,7 +74,7 @@ export default cc.Class({
 
     onClick() {
         let str = this.label.string;
-        GameScene.stopPlayer(this._player);
+        global.scenes['gameScene'].stopPlayer(this._player);
         switch (str) {
             case "PONG":
                 ClientCommService.sendClaimPong(this._player);
