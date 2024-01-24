@@ -46,6 +46,12 @@ cc.Class({
         _currentPlayer: -1,
         _discardPlayer: -1,
         _players: [],
+
+        isMobile: false,
+        coinsChangePerSecond: 0,
+        isGameFinished: false,
+        playerLoadingAttempCounter: 0,
+        numPlayers: 0,
     },
 
     // use this for initialization
@@ -63,6 +69,8 @@ cc.Class({
             Audio.playMusic(global.soundtrack);
         }
 
+        this.loadSkin();
+        this.loadLogo();
         loadImgAtlas()
             .then(() => {
                 FakeServer.initHandlers();
@@ -254,11 +262,84 @@ cc.Class({
             this.endGame.node.active = false;
             if (winner.indexOf(0) !== -1) {
                 this.winNotification.node.active = true;
+                this.winNotification.setAmount(2000);
+                Audio.playEffect ("gameWinner");
             } else {
                 this.loseNotification.node.active = true;
                 this.loseNotification.setWinnerName("player" + (winner[0] + 1));
+                Audio.playEffect ("gameLooser");
             }
         }, 5);
+    },
+
+    loadSkin() {
+        this.loadBackground();
+    },
+
+    // Game common functions:
+    loadBackground() {
+        const spriteSheetPath = global.themeSpriteSheet.replace("%%SKIN%%", global.skin);
+        let self = this;
+        cc.loader.loadRes(spriteSheetPath, cc.SpriteAtlas, function (err, atlas) {
+            if (err) {
+                console.log("Error loading background sprite sheet", spriteSheetPath);
+                return;
+            }
+            let backgroundPath = global.gameSceneBackgroundFile;
+            if (self.isMobile) {
+                backgroundPath += "Mobile";
+            }
+            var spriteFrame = atlas.getSpriteFrame(backgroundPath);
+
+            let backgroundSprite = cc.director.getScene().getChildByName('Canvas').getChildByName('sceneBackground').getComponent(cc.Sprite);
+            backgroundSprite.spriteFrame = spriteFrame;
+        });
+    },
+
+    loadLogo() {
+        const spriteSheetPath = global.langSpriteSheet.replace("%%LANG%%", global.cookie_lang);
+        let self = this;
+        cc.loader.loadRes(spriteSheetPath, cc.SpriteAtlas, function (err, atlas) {
+            if (err) {
+                console.log("Error loading lang sprite sheet", spriteSheetPath);
+                return;
+            }
+            var spriteFrame = atlas.getSpriteFrame("logoTop");
+
+            let logoSprite = cc.director.getScene().getChildByName('Canvas').getChildByName('TopBar').getChildByName('topLogo').getComponent(cc.Sprite);
+            logoSprite.spriteFrame = spriteFrame;
+        });
+    },
+
+    finishGame(winnerOrder, credits) {
+        this.isGameFinished = true;
+        Audio.stopMusic();
+        if (winnerOrder == global.myOrder) {
+            this.showWinNotification(credits);
+            if (credits > 0) {
+                this.setCreditsChange(credits);
+                global.scenes['roomScene'].updateBrowserCredits(global.credits);
+            }
+        }
+        else {
+            var winnerTeam = 1;
+            if (winnerOrder == 1) {
+                winnerTeam = 2;
+            }
+            var winnerTeamName = "Team " + winnerTeam;
+            this.showLoseNotification(winnerTeamName);
+        }
+        global.SfsDisconnectReason = global.SfsDisconnectReasons.gameFinished;
+        global.scenes['roomScene'].closeSfsConnection();
+    },
+
+
+    hideSurrenderDisplay() {
+        this.surrenderDisplayNode.active = false;
+    },
+
+    showSurrenderDisplay() {
+        this.surrenderDisplayNode.active = true;
     },
 
     // called every frame

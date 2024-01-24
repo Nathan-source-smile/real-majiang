@@ -7,20 +7,26 @@
 
 import { ClientCommService } from "./ClientCommService";
 import Winner from "./Winner";
+var lang = require("./lang.js");
 
 export default cc.Class({
     extends: cc.Component,
 
     properties: {
-        winnerName: cc.Label,
+        label1: cc.Label,
+        label2: cc.Label,
     },
 
     // LIFE-CYCLE CALLBACKS:
 
     onLoad() { },
 
-    setWinnerName(str) {
-        this.winnerName.string = str;
+    setWinnerName(winner) {
+        let loseMessage = "%WINNER% has won.";
+        loseMessage = lang.translateText(loseMessage, "lose_label_1");
+        loseMessage = loseMessage.replace("%WINNER%", winner)
+        this.label1.string = loseMessage;
+        this.label2.string = lang.translateText("Try again for better luck", "lose_label_2");;
     },
 
     onClick() {

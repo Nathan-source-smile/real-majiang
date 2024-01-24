@@ -7,20 +7,24 @@
 
 import { ClientCommService } from "./ClientCommService";
 import Winner from "./Winner";
+var lang = require("./lang.js");
 
 export default cc.Class({
     extends: cc.Component,
 
     properties: {
-        amount: cc.Label,
+        message: cc.Label,
     },
 
     // LIFE-CYCLE CALLBACKS:
 
     onLoad() { },
 
-    setAmount(str) {
-        this.amount.string = str;
+    setAmount(credits) {
+        let winMessage = "You win %AMOUNT% toros!";
+        winMessage = lang.translateText(winMessage, "win_label");
+        winMessage = winMessage.replace("%AMOUNT%", "<color=#582C14>" + credits + "</color>");
+        this.message.string = winMessage;
     },
 
     onClick() {
