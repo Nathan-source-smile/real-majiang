@@ -22,14 +22,20 @@ export default cc.Class({
     onLoad() { },
 
     setWinners(windsList, winners) {
+        console.log("windsList: ", windsList);
         this.winners.forEach((winner, index) => {
-            if (winners[index] === -1) {
+            if (winners[index] === undefined || winners[index] === -1) {
                 winner.node.active = false;
             } else {
                 winner.node.active = true;
                 winner.setName("player" + (winners[index] + 1));
             }
-            this.seats[index].setSeats(windsList[index]);
+            if (winners[index] === undefined) {
+                this.seats[index].node.active = false;
+            } else {
+                this.seats[index].node.active = true;
+                this.seats[index].setSeats(windsList[index]);
+            }
         });
     },
 

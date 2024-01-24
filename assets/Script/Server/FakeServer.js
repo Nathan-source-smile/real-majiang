@@ -1,6 +1,6 @@
 import { MESSAGE_TYPE, ROUNDS } from "../Common/Messages";
 import { ClientCommService } from "../ClientCommService";
-import { TIME_LIMIT, ALARM_LIMIT, TOTAL_TILES, WIN, LOSE, NOT_END, TOTAL_MOVEMENT, TOTAL_TIME, PLAYERS, HAND_CARDS, WIND_TYPE, TRIPLE_TYPE } from "../Common/Constants";
+import { TIME_LIMIT, ALARM_LIMIT, TOTAL_TILES, PLAYERS, HAND_CARDS, WIND_TYPE } from "../Common/Constants";
 
 //--------Defining global variables----------
 var tile = {
@@ -50,6 +50,7 @@ var gameScore = [0, 0, 0, 0];
 var winCounts = [0, 0, 0, 0];
 var winners = [];
 var roundNum = 0;
+var gameNum = 0;
 //--------Defining global variables----------
 
 function copyObject(object) {
@@ -287,7 +288,7 @@ function isMadeWin(arr, tile) {
             if (index === pairIndex) {
                 var possiblePairs = [];
                 for (var i = 0; i < a.length - 1; i++) {
-                    for (var j = 0; j < a.length; j++) {
+                    for (var j = i + 1; j < a.length; j++) {
                         possiblePairs.push([a[i], a[j]]);
                     }
                 }
@@ -308,7 +309,7 @@ function isMadeWin(arr, tile) {
                                         flags.push(1);
                                     }
                                 });
-                                if (flags.length === tempA / 3) {
+                                if (flags.length === tempA.length / 3) {
                                     fffff[index] = 1;
                                     return;
                                 }
@@ -330,7 +331,7 @@ function isMadeWin(arr, tile) {
                                 flags.push(1);
                             }
                         });
-                        if (flags.length === a / 3) {
+                        if (flags.length === a.length / 3) {
                             fffff[index] = 1;
                             return;
                         }
@@ -419,9 +420,16 @@ function init() {
     winners = [];
     roundNum = 0;
     winds = [WIND_TYPE.EAST, WIND_TYPE.SOUTH, WIND_TYPE.WEST, WIND_TYPE.NORTH];
+    ServerCommService.send(
+        MESSAGE_TYPE.SC_START_GAME,
+        { winds: copyObject(winds) },
+        [0, 1, 2, 3],
+    );
     winds = cyclicShuffle(winds, 1);
     windsList = [];
-    startRound();
+    setTimeout(function () {
+        startRound();
+    }, 2000);
 }
 
 function initPlayersWinds() {
@@ -435,10 +443,24 @@ function initPlayersWinds() {
 
 function startRound() {
     roundNum += 1;
-    startGame();
+    gameNum = 0;
+    ServerCommService.send(
+        MESSAGE_TYPE.SC_START_ROUND,
+        { roundNum: roundNum },
+        [0, 1, 2, 3]
+    );
+    setTimeout(function () {
+        startGame();
+    }, 1000);
 }
 
 function startGame() {
+    gameNum += 1;
+    ServerCommService.send(
+        MESSAGE_TYPE.SC_START_SMALL_GAME,
+        { roundNum: roundNum, gameNum: gameNum },
+        [0, 1, 2, 3]
+    );
 
     initPlayersWinds();
     windsList.push(winds);
@@ -485,21 +507,31 @@ function startGame() {
     for (var i = 0; i < PLAYERS; i++) {
         sort(players[i]);
     }
-    ServerCommService.send(
-        MESSAGE_TYPE.SC_INIT_PLAYERS_HANDS,
-        { players: players },
-        [0, 1, 2, 3]
-    )
+
+    setTimeout(function () {
+        ServerCommService.send(
+            MESSAGE_TYPE.SC_INIT_PLAYERS_HANDS,
+            { players: players },
+            [0, 1, 2, 3]
+        );
+    }, 1000);
+
 }
 
 // finish the game or mission
 function gameOver() {
-    winCounts[winners[winners.length - 1]] += 1;
-    ServerCommService.send(
-        MESSAGE_TYPE.SC_END_SMALL_GAME,
-        { roundNum: roundNum, winners: winners },
-        [0, 1, 2, 3]
-    );
+    if (winners[winners.length - 1] === -1) {
+    }
+    else {
+        winCounts[winners[winners.length - 1]] += 1;
+    }
+    setTimeout(function () {
+        ServerCommService.send(
+            MESSAGE_TYPE.SC_END_SMALL_GAME,
+            { roundNum: Math.ceil(winners.length / 4), winners: winners },
+            [0, 1, 2, 3]
+        );
+    }, 5000);
     if (winners.length === 16) {
         var max = Math.max.apply(null, winCounts);
         var winner = [];
@@ -513,11 +545,30 @@ function gameOver() {
                 { windsList: windsList, winners: winners, winner: winner },
                 [0, 1, 2, 3]
             );
-        }, 5000);
+        }, 10000);
     } else if (winners.length < 16) {
-        setTimeout(function () {
-            startGame();
-        }, 30000);
+        if (winners.length % 4 === 0) {
+            setTimeout(function () {
+                startRound();
+            }, 10000);
+        } else {
+            setTimeout(function () {
+                startGame();
+            }, 10000);
+            // var max = Math.max.apply(null, winCounts);
+            // var winner = [];
+            // winCounts.forEach(function (e, i) {
+            //     if (e === max)
+            //         winner.push(i);
+            // });
+            // setTimeout(function () {
+            //     ServerCommService.send(
+            //         MESSAGE_TYPE.SC_END_GAME,
+            //         { windsList: windsList, winners: winners, winner: winner },
+            //         [0, 1, 2, 3]
+            //     );
+            // }, 10000);
+        }
     }
 }
 
@@ -581,7 +632,7 @@ function claimDiscard(params, room) {
     var chowPlayer = -1;
     var winPlayers = [];
 
-    players.forEach((player, index) => {
+    players.forEach(function (player, index) {
         if (index !== discardPlayer) {
             var tempPong = isMadePong(player, discardCard);
             var tempKong = isMadeKong(player, discardCard);
@@ -612,7 +663,7 @@ function claimDiscard(params, room) {
     );
     if (winPossiblePlayers.length > 0) {
         var diffs = [];
-        winPossiblePlayers.forEach((e, index) => {
+        winPossiblePlayers.forEach(function (e, index) {
             diffs.push(e - discardPlayer + PLAYERS) % PLAYERS;
         });
         var min = Math.min.apply(null, diffs);
@@ -742,7 +793,7 @@ function claimPrivateKong(params, room) {
 
     playersPublics[currentPlayer].push(privateKong);
     // players[currentPlayer].push(discardCard);
-    privateKong.forEach((tile, index) => {
+    privateKong.forEach(function (tile, index) {
         popTile(players[currentPlayer], tile);
     });
     // var temp = getRandomTile(players[currentPlayer]);
@@ -782,7 +833,7 @@ function confirmClaimTriples() {
     if (pongPossiblePlayer === -1 && kongPossiblePlayer === -1 && chowPossiblePlayer === -1 && winPossiblePlayers.length === 0) {
         if (winPlayers.length > 0) {
             var diffs = [];
-            winPlayers.forEach((winPlayer, index) => {
+            winPlayers.forEach(function (winPlayer, index) {
                 diffs.push(winPlayer - currentPlayer + PLAYERS) % PLAYERS;
             });
             var min = Math.min.apply(null, diffs);
@@ -791,7 +842,7 @@ function confirmClaimTriples() {
             playersPublics[kongPlayer].push(resultKong);
             currentPlayer = kongPlayer;
             players[currentPlayer].push(discardCard);
-            resultKong.forEach((tile, index) => {
+            resultKong.forEach(function (tile, index) {
                 popTile(players[currentPlayer], tile);
             });
             // var temp = getRandomTile(players[currentPlayer]);
@@ -810,7 +861,7 @@ function confirmClaimTriples() {
             playersPublics[pongPlayer].push(resultPong);
             currentPlayer = pongPlayer;
             players[currentPlayer].push(discardCard);
-            resultPong.forEach((tile, index) => {
+            resultPong.forEach(function (tile, index) {
                 popTile(players[currentPlayer], tile);
             });
             var temp = getRandomTile(players[currentPlayer]);
@@ -826,7 +877,7 @@ function confirmClaimTriples() {
             playersPublics[chowPlayer].push(selectedChow);
             currentPlayer = chowPlayer;
             players[currentPlayer].push(discardCard);
-            selectedChow.forEach((tile, index) => {
+            selectedChow.forEach(function (tile, index) {
                 popTile(players[currentPlayer], tile);
             });
             var temp = getRandomTile(players[currentPlayer]);

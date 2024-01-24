@@ -62,6 +62,10 @@ export default cc.Class({
 
     onLoad() {
         this.setButtons(false);
+        this.countDownNode.active = false;
+        this.winds.forEach((wind) => {
+            wind.active = false;
+        });
     },
 
     startCountDown(seconds) {

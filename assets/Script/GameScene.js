@@ -3,7 +3,6 @@ import { FakeServer } from "./Common/CommServices";
 import { ClientCommService } from "./ClientCommService";
 import TopBar from "./TopBar";
 import GlobalVariables from "./GlobalVariables";
-import Modal from "./Modal";
 import { LOSE, TILE_SIZE, TIME_LIMIT, TOTAL_TILES, TOTAL_TIME, WIN } from "./Common/Constants";
 import GlobalData from "./Common/GlobalData";
 import Player from "./Player";
@@ -12,6 +11,8 @@ import EndRound from "./EndRound";
 import EndGame from "./EndGame";
 import WinNotification from "./WinNotification";
 import LoseNotification from "./LoseNotification";
+import StartRound from "./StartRound";
+import StartSmallGame from "./StartSmallGame";
 
 export let GameScene;
 cc.Class({
@@ -34,6 +35,10 @@ cc.Class({
         endGame: EndGame,
         winNotification: WinNotification,
         loseNotification: LoseNotification,
+        startRoundModal: StartRound,
+        startSmallGameModal: StartSmallGame,
+
+        startAnimNode: cc.Animation,
 
         _currentPlayer: -1,
         _discardPlayer: -1,
@@ -59,15 +64,62 @@ cc.Class({
             })
             .catch((error) => {
             });
+        this.startAnimNode.on('finished', this.onAnimationFinished, this);
     },
 
-    initPlayersWinds(winds) {
-        this.notification.active = false;
+    start1(winds) {
+        this._players.forEach((player, index) => {
+            player.setWind(winds[index]);
+            player.clear();
+        });
+        this.startAnimNode.node.active = true;
+        this.startAnimNode.play('windAnim1');
+        // Listen for the 'finished' event        
+    },
+
+    onAnimationFinished() {
+        // Animation has finished playing
+        // Make the node invisible
+        this.startAnimNode.node.active = false; // or this.node.opacity = 0; if you want to keep the node in the scene
+    },
+
+    onDestroy() {
+        // Remove the 'finished' event listener to avoid memory leaks
+        this.startAnimNode.off('finished', this.onAnimationFinished, this);
+    },
+
+    startRound(roundNum) {
+        this._players.forEach((player, index) => {
+            player.clear();
+        });
+        this.notification.active = true;
         this.endRound.node.active = false;
         this.endGame.node.active = false;
         this.winNotification.node.active = false;
         this.loseNotification.node.active = false;
+        this.startRoundModal.node.active = true;
+        this.startSmallGameModal.node.active = false;
 
+        this.startRoundModal.setRound(roundNum);
+    },
+
+    startSmallGame(roundNum, gameNum) {
+        this._players.forEach((player, index) => {
+            player.clear();
+        });
+        this.notification.active = true;
+        this.endRound.node.active = false;
+        this.endGame.node.active = false;
+        this.winNotification.node.active = false;
+        this.loseNotification.node.active = false;
+        this.startRoundModal.node.active = false;
+        this.startSmallGameModal.node.active = true;
+
+        this.startSmallGameModal.setRound(roundNum);
+        this.startSmallGameModal.setGameNum(gameNum);
+    },
+
+    initPlayersWinds(winds) {
         this._players.forEach((player, index) => {
             player.setWind(winds[index]);
             player.clear();
@@ -75,6 +127,13 @@ cc.Class({
     },
 
     initPlayersHands(players) {
+        this.notification.active = false;
+        this.endRound.node.active = false;
+        this.endGame.node.active = false;
+        this.winNotification.node.active = false;
+        this.loseNotification.node.active = false;
+        this.startRoundModal.node.active = false;
+        this.startSmallGameModal.node.active = false;
         this._players.forEach((player, index) => {
             player.initHand(players[index]);
         });
@@ -183,12 +242,14 @@ cc.Class({
         this.endGame.setWinners(windsList, winners);
 
         this.scheduleOnce(() => {
+            this.endGame.node.active = false;
             if (winner.indexOf(0) !== -1) {
                 this.winNotification.node.active = true;
             } else {
                 this.loseNotification.node.active = true;
+                this.loseNotification.setWinnerName("player" + (winner[0] + 1));
             }
-        }, 3);
+        }, 5);
     },
 
     // called every frame

@@ -5,26 +5,24 @@
 // Learn life-cycle callbacks:
 //  - https://docs.cocos.com/creator/manual/en/scripting/life-cycle-callbacks.html
 
-import { ClientCommService } from "./ClientCommService";
-import Winner from "./Winner";
-
 export default cc.Class({
     extends: cc.Component,
 
     properties: {
-        winnerName: cc.Label,
+        roundNum: cc.Label,
+        gameNum: cc.Label,
     },
 
     // LIFE-CYCLE CALLBACKS:
 
     onLoad() { },
 
-    setWinnerName(str) {
-        this.winnerName.string = str;
+    setRound(roundNum) {
+        this.roundNum.string = "ROUND " + roundNum;
     },
 
-    onClick() {
-        ClientCommService.sendRestartGame();
+    setGameNum(gameNum) {
+        this.gameNum.string = "Game " + gameNum;
     },
 
     update(dt) { },

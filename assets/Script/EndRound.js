@@ -26,7 +26,7 @@ export default cc.Class({
         this.games.forEach((gameNum, index) => {
             if (index < winners.length - p) {
                 gameNum.node.active = true;
-                let i = winners[winners.length - p - 1 + index] + 1;
+                let i = winners[p + index] + 1;
                 if (i === 0) {
                     this.winners[index].node.active = false;
                 } else {

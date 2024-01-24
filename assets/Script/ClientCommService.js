@@ -11,7 +11,13 @@ export const ClientCommService = {
 
         switch (messageType) {
             case MESSAGE_TYPE.SC_START_GAME:
-                // GameScene.start1(params.tiles, params.availableTiles, params.moves);
+                GameScene.start1(params.winds);
+                break;
+            case MESSAGE_TYPE.SC_START_ROUND:
+                GameScene.startRound(params.roundNum);
+                break;
+            case MESSAGE_TYPE.SC_START_SMALL_GAME:
+                GameScene.startSmallGame(params.roundNum, params.gameNum);
                 break;
             case MESSAGE_TYPE.SC_SET_WIND:
                 GameScene.initPlayersWinds(params.winds);
