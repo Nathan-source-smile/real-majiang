@@ -28,7 +28,9 @@ export default cc.Class({
                 gameNum.node.active = true;
                 let i = winners[p + index] + 1;
                 if (i === 0) {
-                    this.winners[index].node.active = false;
+                    this.winners[index].node.active = true;
+                    this.winners[index].avatar.node.active = false;
+                    this.winners[index].setName("-");
                 } else {
                     this.winners[index].node.active = true;
                     this.winners[index].setName("player" + i);

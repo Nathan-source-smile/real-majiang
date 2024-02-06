@@ -38,6 +38,8 @@ var gameVars = {
   winners: [],
   roundNum: 0,
   gameNum: 0,
+  roundScore: [0, 0, 0, 0],
+  gameScore: [0, 0, 0, 0],
 };
 
 module.exports = gameVars;

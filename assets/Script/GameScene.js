@@ -84,10 +84,11 @@ cc.Class({
         this.startAnimNode.on('finished', this.onAnimationFinished, this);
     },
 
-    start1(winds) {
+    start1(winds, roundScore, gameScore) {
         this._players.forEach((player, index) => {
             player.setWind(winds[index]);
             player.clear();
+            player.setScore(roundScore[index], gameScore[index]);
         });
         this.startAnimNode.node.active = true;
         this.startAnimNode.play('windAnim1');
@@ -105,9 +106,10 @@ cc.Class({
         this.startAnimNode.off('finished', this.onAnimationFinished, this);
     },
 
-    newRound(roundNum) {
+    newRound(roundNum, roundScore, gameScore) {
         this._players.forEach((player, index) => {
             player.clear();
+            player.setScore(roundScore[index], gameScore[index]);
         });
         this.notification.active = true;
         this.endRound.node.active = false;
@@ -120,9 +122,10 @@ cc.Class({
         this.startRoundModal.setRound(roundNum);
     },
 
-    startSmallGame(roundNum, gameNum) {
+    startSmallGame(roundNum, gameNum, roundScore, gameScore) {
         this._players.forEach((player, index) => {
             player.clear();
+            player.setScore(roundScore[index], gameScore[index]);
         });
         this.notification.active = true;
         this.endRound.node.active = false;
@@ -263,11 +266,11 @@ cc.Class({
             if (winner.indexOf(0) !== -1) {
                 this.winNotification.node.active = true;
                 this.winNotification.setAmount(2000);
-                Audio.playEffect ("gameWinner");
+                Audio.playEffect("gameWinner");
             } else {
                 this.loseNotification.node.active = true;
                 this.loseNotification.setWinnerName("player" + (winner[0] + 1));
-                Audio.playEffect ("gameLooser");
+                Audio.playEffect("gameLooser");
             }
         }, 5);
     },

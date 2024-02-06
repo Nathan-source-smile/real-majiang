@@ -12,13 +12,13 @@ export const ClientCommService = {
 
         switch (messageType) {
             case MESSAGE_TYPE.SC_START_GAME:
-                global.scenes['gameScene'].start1(params.winds);
+                global.scenes['gameScene'].start1(params.winds, params.roundScore, params.gameScore);
                 break;
             case MESSAGE_TYPE.SC_START_ROUND:
-                global.scenes['gameScene'].newRound(params.roundNum);
+                global.scenes['gameScene'].newRound(params.roundNum, params.roundScore, params.gameScore);
                 break;
             case MESSAGE_TYPE.SC_START_SMALL_GAME:
-                global.scenes['gameScene'].startSmallGame(params.roundNum, params.gameNum);
+                global.scenes['gameScene'].startSmallGame(params.roundNum, params.gameNum, params.roundScore, params.gameScore);
                 break;
             case MESSAGE_TYPE.SC_SET_WIND:
                 global.scenes['gameScene'].initPlayersWinds(params.winds);

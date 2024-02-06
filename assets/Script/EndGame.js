@@ -25,7 +25,9 @@ export default cc.Class({
         console.log("windsList: ", windsList);
         this.winners.forEach((winner, index) => {
             if (winners[index] === undefined || winners[index] === -1) {
-                winner.node.active = false;
+                winner.node.active = true;
+                winner.avatar.node.active = false;
+                winner.setName("-");
             } else {
                 winner.node.active = true;
                 winner.setName("player" + (winners[index] + 1));

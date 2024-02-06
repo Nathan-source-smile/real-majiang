@@ -20,7 +20,12 @@ export default cc.Class({
 
     },
 
-    clear(){
+    setScore(roundScore, gameScore) {
+        this.avatar.setRoundScore(roundScore);
+        this.avatar.setGameScore(gameScore);
+    },
+
+    clear() {
         this.hand.clear();
         this.discards.clear();
         this.triples.clear();

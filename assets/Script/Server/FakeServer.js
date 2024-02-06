@@ -409,13 +409,15 @@ function onInit() {
 }
 
 function init() {
+    gameVars.roundScore = [0, 0, 0, 0];
+    gameVars.gameScore = [0, 0, 0, 0];
     gameVars.winCounts = [0, 0, 0, 0];
     gameVars.winners = [];
     gameVars.roundNum = 0;
     gameVars.winds = [WIND_TYPE.EAST, WIND_TYPE.SOUTH, WIND_TYPE.WEST, WIND_TYPE.NORTH];
     ServerCommService.send(
         MESSAGE_TYPE.SC_START_GAME,
-        { winds: copyObject(gameVars.winds) },
+        { winds: copyObject(gameVars.winds), roundScore: gameVars.roundScore, gameScore: gameVars.gameScore },
         [0, 1, 2, 3],
     );
     gameVars.winds = cyclicShuffle(gameVars.winds, 1);
@@ -435,11 +437,21 @@ function initPlayersWinds() {
 }
 
 function newRound() {
+    // gameVars.roundScore = [0, 0, 0, 0];
+    var max = Math.max.apply(null, gameVars.gameScore);
+    if (max !== 0) {
+        for (var i = 0; i < PLAYERS; i++) {
+            if (gameVars.gameScore[i] === max) {
+                gameVars.roundScore[i] += 1;
+            }
+        }
+    }
+    gameVars.gameScore = [0, 0, 0, 0];
     gameVars.roundNum += 1;
     gameVars.gameNum = 0;
     ServerCommService.send(
         MESSAGE_TYPE.SC_START_ROUND,
-        { roundNum: gameVars.roundNum },
+        { roundNum: gameVars.roundNum, roundScore: gameVars.roundScore, gameScore: gameVars.gameScore },
         [0, 1, 2, 3]
     );
     setTimeout(function () {
@@ -451,7 +463,7 @@ function startGame() {
     gameVars.gameNum += 1;
     ServerCommService.send(
         MESSAGE_TYPE.SC_START_SMALL_GAME,
-        { roundNum: gameVars.roundNum, gameNum: gameVars.gameNum },
+        { roundNum: gameVars.roundNum, gameNum: gameVars.gameNum, roundScore: gameVars.roundScore, gameScore: gameVars.gameScore },
         [0, 1, 2, 3]
     );
 
@@ -586,6 +598,7 @@ function askPlayer() {
     gameVars.discardCard = null;
     if (isMadeWin(gameVars.players[gameVars.currentPlayer], null)) {
         gameVars.winners.push(gameVars.currentPlayer);
+        gameVars.gameScore[gameVars.currentPlayer] += 1;
         gameOver();
         return;
     }
@@ -661,6 +674,7 @@ function claimDiscard(params, room) {
         });
         var min = Math.min.apply(null, diffs);
         gameVars.winners.push(gameVars.winPossiblePlayers[diffs.indexOf(min)]);
+        gameVars.gameScore[gameVars.winPossiblePlayers[diffs.indexOf(min)]] += 1;
         gameOver();
         return;
     } else {
