@@ -74,6 +74,7 @@ export default cc.Class({
 
     onClick() {
         let str = this.label.string;
+        global.scenes['gameScene'].showBubble(this._player, str);
         global.scenes['gameScene'].stopPlayer(this._player);
         switch (str) {
             case "PONG":

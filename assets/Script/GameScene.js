@@ -173,6 +173,10 @@ cc.Class({
         this._players[gameBoardOrder].avatar.deactivate();
     },
 
+    showBubble(gameBoardOrder, str) {
+        this._players[gameBoardOrder].avatar.showBubble(str);
+    },
+
     askPlayer(currentPlayer, drawCard, deckCardsNum, discardCard, discardPlayer) {
         this._currentPlayer = currentPlayer;
         this.setActivePlayer(currentPlayer, TIME_LIMIT);

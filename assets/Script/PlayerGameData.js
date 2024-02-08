@@ -49,6 +49,14 @@ export default cc.Class({
             default: null,
             type: cc.Node,
         },
+        bubbleBackground: {
+            default: null,
+            type: cc.Sprite,
+        },
+        bubbleLabel: {
+            default: null,
+            type: cc.Label,
+        },
         player: -1,
         // botIconNode: {
         //     default: null,
@@ -150,6 +158,37 @@ export default cc.Class({
                 return 0;
         }
         console.log(this.buttons);
+    },
+
+    showBubble(str) {
+        let spriteFrame = GlobalData.imgAtlas.getSpriteFrame("small notifications-chow-chow");
+        this.bubbleLabel.node.color = (new cc.Color()).fromHEX("3F1805");
+        switch (str) {
+            case "PONG":
+                this.bubbleLabel.string = str;
+                break;
+            case "KONG":
+                this.bubbleLabel.string = str;
+                break;
+            case "P KONG":
+                this.bubbleLabel.string = "KONG";
+                break;
+            case "CHOW":
+                this.bubbleLabel.string = str;
+                break;
+            case "PASS":
+                spriteFrame = GlobalData.imgAtlas.getSpriteFrame("small notifications-pass-pass");
+                this.bubbleLabel.node.color = (new cc.Color()).fromHEX("582C14");
+                this.bubbleLabel.string = str;
+                break;
+            default:
+                return 0;
+        }
+        this.bubbleBackground.spriteFrame = spriteFrame;
+        this.bubbleBackground.node.active = true;
+        this.scheduleOnce(() => {
+            this.bubbleBackground.node.active = false;
+        }, 1)
     },
 
     // setBotIcon (isBot){
